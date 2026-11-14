@@ -1,20 +1,33 @@
-import { fetchRadlabData, loadRadlabSnapshot, findPeaks, findSAAEvents, getMaxDoseRate, getAvgDoseRate } from './radlab.js';
-import { fetchDonkiData, classifyFlare, hasMajorFlare, getLatestEvents } from './donki.js';
+import { fetchRadlabWindow, findPeaks, findSAAEvents, getMaxDoseRate, getAvgDoseRate } from './radlab.js';
+import { fetchDonkiData, hasMajorFlare, getLatestEvents } from './donki.js';
 import { getPresets, searchStudies, ALERT_STUDY_LINKS } from './osdr.js';
 import { HAZARDS } from './hazards.js';
 import { getDestinations, oneWayDelaySeconds, roundTripDelaySeconds, formatDelay, interpolateDistance, getNearestDestination } from './signal-delay.js';
-import { PROVENANCE_SOURCES, REFERENCES, NASA_DATA_FIELD_TEXT, buildProvenanceTable } from './provenance.js';
-import { REFERENCE_RANGES, getStatus, getSource } from '../sim/reference.js';
+import { REFERENCES, NASA_DATA_FIELD_TEXT, buildProvenanceTable } from './provenance.js';
+import { REFERENCE_RANGES, getStatus } from '../sim/reference.js';
 import { raise } from '../sim/alerts.js';
 
 const RAD_THRESHOLD = 50; // µGy/h, illustrative HELIOS demo threshold (not a NASA limit)
+const REPLAY_START = '2022-03-01';
+const REPLAY_END = '2022-03-02';
+const STATUS_LABEL = { live: 'LIVE', cached: 'CACHED', historical: 'HISTORICAL', snapshot: 'SNAPSHOT', sample: 'SAMPLE', unavailable: 'OFFLINE', reference: 'REFERENCE' };
+const STATUS_CLASS = { live: 'nasa-dot-live', cached: 'nasa-dot-live', historical: 'nasa-dot-hist', reference: 'nasa-dot-hist', snapshot: 'nasa-dot-snap', sample: 'nasa-dot-snap', unavailable: 'nasa-dot-off' };
+
 let radChartCanvas = null;
-let radData = null;
+let radResult = null;
 let radReplayIdx = 0;
 let radReplayTimer = null;
-let radStatus = 'unavailable';
-let donkiStatus = 'unavailable';
-let donkiData = null;
+let donkiResult = null;
+let osdrResult = null;
+let provContainer = null;
+
+function isoDay(offsetDays) {
+  return new Date(Date.now() + offsetDays * 86400000).toISOString().slice(0, 10);
+}
+
+function esc(value) {
+  return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
 
 function badge(type) {
   const labels = { real: 'REAL NASA DATA', derived: 'DERIVED', simulated: 'SIMULATED' };
@@ -23,19 +36,44 @@ function badge(type) {
 }
 
 function statusDot(status) {
-  const map = { live: 'nasa-dot-live', snapshot: 'nasa-dot-snap', sample: 'nasa-dot-snap', cached: 'nasa-dot-live', unavailable: 'nasa-dot-off', historical: 'nasa-dot-hist' };
-  const labels = { live: 'LIVE', snapshot: 'SNAPSHOT', sample: 'SAMPLE', cached: 'CACHED', unavailable: 'OFFLINE', historical: 'HISTORICAL' };
-  return `<span class="nasa-dot ${map[status] || 'nasa-dot-off'}">${labels[status] || status}</span>`;
+  return `<span class="nasa-dot ${STATUS_CLASS[status] || 'nasa-dot-off'}">${STATUS_LABEL[status] || 'OFFLINE'}</span>`;
 }
 
-function renderRadlationChart() {
-  if (!radChartCanvas || !radData) return;
+function sourceLine(name, result) {
+  const label = STATUS_LABEL[result?.status] || 'OFFLINE';
+  const time = result?.fetchedAt ? new Date(result.fetchedAt).toLocaleString() : '—';
+  let note = '';
+  if (result?.error && result.status === 'live') {
+    note = `<div class="nasa-err">Live (partial): ${esc(result.error)}</div>`;
+  } else if (result?.error) {
+    note = `<div class="nasa-err">Live fetch failed: ${esc(result.error)}</div>`;
+  }
+  return `<div class="nasa-source-label">Source: ${name} · ${label} · fetched ${time}</div>${note}`;
+}
+
+function refreshProvenance() {
+  if (provContainer) renderProvenanceSection(provContainer);
+}
+
+async function loadRadiation() {
+  const live = await fetchRadlabWindow(isoDay(-1), isoDay(0), 'live');
+  if (live.data) return live;
+  const replay = await fetchRadlabWindow(REPLAY_START, REPLAY_END, 'historical');
+  return { ...replay, error: live.error };
+}
+
+function radPoints() {
+  return radResult?.data?.data || [];
+}
+
+function renderRadiationChart() {
+  if (!radChartCanvas) return;
   const ctx = radChartCanvas.getContext('2d');
   const w = radChartCanvas.width = radChartCanvas.offsetWidth * (devicePixelRatio || 1);
   const h = radChartCanvas.height = 180 * (devicePixelRatio || 1);
   ctx.clearRect(0, 0, w, h);
-  const points = radData.data?.data || radData.data || [];
-  if (!Array.isArray(points) || points.length === 0) {
+  const points = radPoints();
+  if (points.length === 0) {
     ctx.fillStyle = '#5D6580';
     ctx.font = '14px Roboto Condensed';
     ctx.textAlign = 'center';
@@ -108,13 +146,16 @@ function renderRadlationChart() {
 }
 
 function renderRadiationSection(container) {
+  const windowLabel = radResult?.status === 'historical' || radResult?.status === 'snapshot'
+    ? `replay of real readings for ${REPLAY_START}`
+    : 'last 24 hours';
   container.innerHTML = `
     <div class="nasa-section-head">
       ${badge('real')}
       <h3>ISS Radiation — NASA OSDR RadLab</h3>
-      ${statusDot(radStatus)}
+      ${statusDot(radResult?.status || 'unavailable')}
     </div>
-    <p class="nasa-desc">Absorbed dose rate from the ISS DosTel instrument. Real RadLab readings for 2022-03-01 (5-minute averages of DosTel1 and DosTel2), fetched from the NASA OSDR RadLab API with a saved copy of the same real data as fallback. The advisory line is an illustrative HELIOS demo threshold, not a NASA limit.</p>
+    <p class="nasa-desc">Absorbed dose rate from the ISS DosTel instrument, ${windowLabel}. If live readings are not available, the 2022-03-01 replay of real readings is shown and labelled. The advisory line is an illustrative HELIOS demo threshold, not a NASA limit.</p>
     <div class="nasa-rad-grid">
       <div class="nasa-rad-chart-wrap">
         <canvas id="nasa-rad-chart"></canvas>
@@ -124,16 +165,15 @@ function renderRadiationSection(container) {
     <div class="nasa-rad-controls">
       <button class="xb" id="nasa-rad-replay" type="button">REPLAY 24H</button>
       <button class="xb" id="nasa-rad-refresh" type="button">REFETCH</button>
-      <span id="nasa-rad-source" class="nasa-source-label"></span>
     </div>
+    ${sourceLine('NASA OSDR RadLab', radResult)}
     <p class="nasa-disclaimer">Contains data from NASA. Not endorsed by NASA.</p>
   `;
   radChartCanvas = container.querySelector('#nasa-rad-chart');
   const statsEl = container.querySelector('#nasa-rad-stats');
-  const sourceEl = container.querySelector('#nasa-rad-source');
 
-  if (radData && radData.data) {
-    const points = radData.data.data || radData.data;
+  if (radPoints().length > 0) {
+    const points = radPoints();
     const maxD = getMaxDoseRate(points);
     const avgD = getAvgDoseRate(points);
     const saaEvents = findSAAEvents(points);
@@ -144,32 +184,26 @@ function renderRadiationSection(container) {
       <div class="nasa-stat"><b>${saaEvents.length}</b><span>SAA readings (5-min bins)</span></div>
       <div class="nasa-stat"><b>${peaks.length}</b><span>Peaks above threshold</span></div>
     `;
-    sourceEl.textContent = `Source: NASA OSDR RadLab · ${radStatus === 'live' ? 'live fetch' : radStatus === 'snapshot' ? 'saved copy of real NASA data' : radStatus === 'cached' ? 'session cache' : 'unavailable'}`;
 
-    if (radStatus === 'live' || radStatus === 'cached') {
-      const highPeaks = peaks.slice(0, 3);
-      for (const p of highPeaks) {
-        const v = Number(p.absorbed_dose_rate);
-        if (v >= RAD_THRESHOLD) {
-          raise('ADVISORY', 'rad', `Replay of NASA RadLab 2022-03-01: ${v.toFixed(2)} µGy/h exceeds demo advisory threshold`, 'NASA');
-          break;
-        }
+    if (radResult.status === 'live' || radResult.status === 'cached') {
+      const highPeak = peaks.find((p) => Number(p.absorbed_dose_rate) >= RAD_THRESHOLD);
+      if (highPeak) {
+        raise('ADVISORY', 'rad', `ISS radiation: ${Number(highPeak.absorbed_dose_rate).toFixed(2)} µGy/h exceeds demo advisory threshold`, 'NASA');
       }
     }
   } else {
-    statsEl.innerHTML = '<p class="nasa-err">Radiation data unavailable. The NASA RadLab API could not be reached and no snapshot was found.</p>';
-    sourceEl.textContent = 'Source: unavailable';
+    statsEl.innerHTML = '<p class="nasa-err">Radiation data unavailable. NASA RadLab could not be reached and no saved copy is available.</p>';
   }
 
-  renderRadlationChart();
+  renderRadiationChart();
 
   container.querySelector('#nasa-rad-replay').addEventListener('click', () => {
     if (radReplayTimer) { clearInterval(radReplayTimer); radReplayTimer = null; }
     radReplayIdx = 0;
     radReplayTimer = setInterval(() => {
       radReplayIdx++;
-      renderRadlationChart();
-      if (radReplayIdx >= (radData?.data?.data || radData?.data || []).length) {
+      renderRadiationChart();
+      if (radReplayIdx >= radPoints().length) {
         clearInterval(radReplayTimer);
         radReplayTimer = null;
       }
@@ -177,34 +211,34 @@ function renderRadiationSection(container) {
   });
 
   container.querySelector('#nasa-rad-refresh').addEventListener('click', async () => {
-    const today = new Date().toISOString().slice(0, 10);
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    const result = await fetchRadlabData(yesterday, today);
-    radData = result;
-    radStatus = result.status;
+    radResult = await loadRadiation();
     radReplayIdx = 0;
     renderRadiationSection(container);
+    refreshProvenance();
   });
 }
 
 function renderSpaceWeatherSection(container) {
-  const events = donkiData?.data ? getLatestEvents(donkiData.data) : [];
-  const majorFlare = donkiData?.data ? hasMajorFlare(donkiData.data.flares) : false;
+  const d = donkiResult?.data;
+  const events = d ? getLatestEvents(d) : [];
+  const majorFlare = d ? hasMajorFlare(d.flares) : false;
+  const isLive = donkiResult?.status === 'live' || donkiResult?.status === 'cached';
+  const quiet = isLive && d?.flares?.length === 0 && d?.cmes?.length === 0;
 
   container.innerHTML = `
     <div class="nasa-section-head">
       ${badge('real')}
       <h3>Space Weather — NASA DONKI</h3>
-      ${statusDot(donkiStatus === 'snapshot' ? 'sample' : donkiStatus)}
+      ${statusDot(donkiResult?.status || 'unavailable')}
     </div>
     <p class="nasa-desc">Solar flares, coronal mass ejections and space weather notifications from NASA's DONKI API (last 7 days).</p>
     <div class="nasa-sw-grid">
       <div class="nasa-sw-stat ${majorFlare ? 'nasa-sw-alert' : ''}">
-        <b>${donkiData?.data?.flares?.length ?? '--'}</b>
+        <b>${d?.flares?.length ?? '--'}</b>
         <span>Solar flares (7d)</span>
       </div>
       <div class="nasa-sw-stat">
-        <b>${donkiData?.data?.cmes?.length ?? '--'}</b>
+        <b>${d?.cmes?.length ?? '--'}</b>
         <span>CMEs (7d)</span>
       </div>
       <div class="nasa-sw-stat ${majorFlare ? 'nasa-sw-alert' : ''}">
@@ -215,29 +249,32 @@ function renderSpaceWeatherSection(container) {
     <div class="nasa-sw-events" id="nasa-sw-events"></div>
     <div class="nasa-rad-controls">
       <button class="xb" id="nasa-sw-refresh" type="button">REFETCH</button>
-      <span class="nasa-source-label">Source: NASA DONKI · ${donkiStatus === 'live' ? 'live fetch' : donkiStatus === 'snapshot' ? 'illustrative sample, not live NASA data' : donkiStatus === 'cached' ? 'session cache' : 'unavailable'}</span>
     </div>
+    ${sourceLine('NASA DONKI', donkiResult)}
     <p class="nasa-disclaimer">Contains data from NASA. Not endorsed by NASA.</p>
   `;
 
   const eventsEl = container.querySelector('#nasa-sw-events');
-  if (events.length > 0) {
+  if (quiet) {
+    eventsEl.innerHTML = '<p class="nasa-desc">Live. No flares or CMEs in the last 7 days.</p>';
+  } else if (events.length > 0) {
     eventsEl.innerHTML = events.map(e => {
       const sevCls = e.severity === 'X' ? 'nasa-flare-x' : e.severity === 'M' ? 'nasa-flare-m' : e.severity === 'C' ? 'nasa-flare-c' : '';
-      return `<div class="nasa-event ${sevCls}"><span class="nasa-event-type">${e.type}</span><span class="nasa-event-class">${e.class}</span><span class="nasa-event-time">${e.time}</span></div>`;
+      const label = `<span class="nasa-event-type">${esc(e.type)}</span><span class="nasa-event-class">${esc(e.class)}</span><span class="nasa-event-time">${esc(e.time)}</span>`;
+      const inner = e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener" class="nasa-event-link">${label}</a>` : label;
+      return `<div class="nasa-event ${sevCls}">${inner}</div>`;
     }).join('');
   } else {
     eventsEl.innerHTML = '<p class="nasa-err">No space weather events available.</p>';
   }
 
   container.querySelector('#nasa-sw-refresh').addEventListener('click', async () => {
-    const result = await fetchDonkiData();
-    donkiData = result;
-    donkiStatus = result.status;
+    donkiResult = await fetchDonkiData();
     renderSpaceWeatherSection(container);
+    refreshProvenance();
   });
 
-  if (majorFlare && donkiStatus !== 'snapshot') {
+  if (majorFlare && isLive) {
     raise('ADVISORY', 'spaceweather', 'Major solar flare (M/X class) detected by NASA DONKI', 'NASA');
   }
 }
@@ -260,31 +297,38 @@ function renderEvidenceSection(container) {
   `;
 
   const presetsEl = container.querySelector('#nasa-presets');
-  presetsEl.innerHTML = presets.map(p => `<button class="nasa-preset-chip" data-q="${p.query}">${p.label}</button>`).join('');
+  presetsEl.innerHTML = presets.map(p => `<button class="nasa-preset-chip" data-q="${esc(p.query)}">${esc(p.label)}</button>`).join('');
 
   const resultsEl = container.querySelector('#nasa-osdr-results');
 
   async function doSearch(query) {
     resultsEl.innerHTML = '<p class="nasa-loading">Searching NASA OSDR…</p>';
-    const result = await searchStudies(query);
-    const studies = result.data?.studies || [];
-    if (studies.length === 0) {
-      resultsEl.innerHTML = `<p class="nasa-err">No studies found${result.status === 'snapshot' ? ' (showing snapshot data)' : ''}.</p>`;
+    osdrResult = await searchStudies(query);
+    refreshProvenance();
+    const studies = osdrResult.data?.studies || [];
+    const source = sourceLine('NASA OSDR', osdrResult);
+    if (osdrResult.status === 'unavailable') {
+      resultsEl.innerHTML = `${source}<p class="nasa-err">NASA OSDR could not be reached.</p>`;
       return;
     }
-    resultsEl.innerHTML = `<p class="nasa-result-count">${studies.length} study/studies found · ${statusDot(result.status)}</p>` +
+    if (studies.length === 0) {
+      resultsEl.innerHTML = `${source}<p class="nasa-err">No studies found for "${esc(query)}".</p>`;
+      return;
+    }
+    resultsEl.innerHTML = source +
+      `<p class="nasa-result-count">${studies.length} study/studies found</p>` +
       studies.map(s => `
         <div class="nasa-study-card">
           <div class="nasa-study-head">
-            <a href="${s.url}" target="_blank" rel="noopener"><b>${s.accession}</b></a>
-            ${s.mission ? `<span class="nasa-study-mission">${s.mission}</span>` : ''}
+            <a href="${esc(s.url)}" target="_blank" rel="noopener"><b>${esc(s.accession)}</b></a>
+            ${s.mission ? `<span class="nasa-study-mission">${esc(s.mission)}</span>` : ''}
           </div>
-          <h4>${s.title}</h4>
+          <h4>${esc(s.title)}</h4>
           <div class="nasa-study-meta">
-            <span>Organism: ${s.organism || '—'}</span>
-            ${s.assay_types?.length ? `<span>Assays: ${s.assay_types.join(', ')}</span>` : ''}
+            <span>Organism: ${esc(s.organism || '—')}</span>
+            ${s.assay_types?.length ? `<span>Assays: ${esc(s.assay_types.join(', '))}</span>` : ''}
           </div>
-          ${s.tags?.length ? `<div class="nasa-study-tags">${s.tags.map(t => `<span class="nasa-tag">${t}</span>`).join('')}</div>` : ''}
+          ${s.tags?.length ? `<div class="nasa-study-tags">${s.tags.map(t => `<span class="nasa-tag">${esc(t)}</span>`).join('')}</div>` : ''}
         </div>
       `).join('');
   }
@@ -390,7 +434,8 @@ function renderSignalDelaySection(container) {
 }
 
 function renderProvenanceSection(container) {
-  const table = buildProvenanceTable();
+  provContainer = container;
+  const table = buildProvenanceTable({ radlab: radResult, donki: donkiResult, osdr: osdrResult });
   container.innerHTML = `
     <div class="nasa-section-head">
       ${badge('real')}
@@ -403,10 +448,10 @@ function renderProvenanceSection(container) {
         <tbody>
           ${table.map(s => `
             <tr>
-              <td><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></td>
-              <td>${s.purpose}</td>
-              <td>${statusDot(s.status.toLowerCase())}</td>
-              <td>${s.lastFetched ? new Date(s.lastFetched).toLocaleString() : '—'}</td>
+              <td><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></td>
+              <td>${esc(s.purpose)}</td>
+              <td>${statusDot(s.status)}</td>
+              <td>${s.fetchedAt ? new Date(s.fetchedAt).toLocaleString() : '—'}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -414,10 +459,10 @@ function renderProvenanceSection(container) {
     </div>
     <h4 class="nasa-ref-head">References</h4>
     <div class="nasa-refs">
-      ${REFERENCES.map(r => `<a href="${r.url}" target="_blank" rel="noopener" class="nasa-ref-link">${r.name}</a>`).join('')}
+      ${REFERENCES.map(r => `<a href="${esc(r.url)}" target="_blank" rel="noopener" class="nasa-ref-link">${esc(r.name)}</a>`).join('')}
     </div>
     <h4 class="nasa-ref-head">NASA Data Field (for Space Apps submission)</h4>
-    <pre class="nasa-data-field">${NASA_DATA_FIELD_TEXT}</pre>
+    <pre class="nasa-data-field">${esc(NASA_DATA_FIELD_TEXT)}</pre>
     <div class="nasa-badge-legend">
       <h4>Data badge legend</h4>
       <div class="nasa-badge-legend-items">
@@ -557,24 +602,26 @@ function updateHudTiles() {
   const swValEl = document.querySelector('#hud-sw-val');
   const swStatEl = document.querySelector('#hud-sw-status');
 
-  if (radValEl && radData?.data) {
-    const points = radData.data.data || radData.data;
-    const maxD = getMaxDoseRate(points);
+  if (radValEl && radResult?.data) {
+    const maxD = getMaxDoseRate(radPoints());
     if (maxD) {
       const v = Number(maxD.absorbed_dose_rate);
       radValEl.textContent = v.toFixed(2) + ' µGy/h';
       const st = getStatus('radiation', v);
-      radStatEl.textContent = st.toUpperCase();
+      radStatEl.textContent = STATUS_LABEL[radResult.status] || st.toUpperCase();
       radStatEl.className = 'hud-row hud-rad-' + st;
     }
   }
 
-  if (swValEl && donkiData?.data) {
-    const events = getLatestEvents(donkiData.data);
-    const flares = donkiData.data.flares || [];
-    const major = hasMajorFlare(flares);
-    if (events.length > 0) {
-      swValEl.textContent = `${flares.length} flares, ${donkiData.data.cmes?.length || 0} CMEs`;
+  if (swValEl && donkiResult?.data) {
+    const flares = donkiResult.data.flares;
+    if (!Array.isArray(flares)) {
+      swValEl.textContent = '—';
+      swStatEl.textContent = STATUS_LABEL[donkiResult.status] || 'OFFLINE';
+      swStatEl.className = 'hud-row';
+    } else {
+      const major = hasMajorFlare(flares);
+      swValEl.textContent = `${flares.length} flares, ${donkiResult.data.cmes?.length || 0} CMEs`;
       swStatEl.textContent = major ? 'MAJOR FLARE' : 'QUIET';
       swStatEl.className = 'hud-row hud-sw-' + (major ? 'alert' : 'nominal');
     }
@@ -611,20 +658,13 @@ export async function initNasaUI() {
   const refRangesSection = root.querySelector('#nasa-ref-ranges-section');
   const provSection = root.querySelector('#nasa-provenance-section');
 
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-
   radSection.innerHTML = '<p class="nasa-loading">Fetching NASA RadLab data…</p>';
   swSection.innerHTML = '<p class="nasa-loading">Fetching NASA DONKI space weather…</p>';
 
-  const radResult = await fetchRadlabData('2022-03-01', '2022-03-02');
-  radData = radResult;
-  radStatus = radResult.status;
+  radResult = await loadRadiation();
   renderRadiationSection(radSection);
 
-  const donkiResult = await fetchDonkiData();
-  donkiData = donkiResult;
-  donkiStatus = donkiResult.status;
+  donkiResult = await fetchDonkiData();
   renderSpaceWeatherSection(swSection);
 
   renderEvidenceSection(evidenceSection);
@@ -639,7 +679,7 @@ export async function initNasaUI() {
 
   if (radReplayTimer) {
     new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) renderRadlationChart();
+      if (entries[0].isIntersecting) renderRadiationChart();
     }).observe(radChartCanvas);
   }
 }

@@ -1,12 +1,19 @@
-import { createClient } from '@supabase/supabase-js';
-
 const q = (s) => document.querySelector(s);
 const qa = (s) => document.querySelectorAll(s);
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const buddyConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+let supabase = null;
+let supabaseLoading = null;
+
+function loadSupabase() {
+  supabaseLoading ??= import('@supabase/supabase-js').then(({ createClient }) => {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    return supabase;
+  });
+  return supabaseLoading;
+}
 
 const MY_ID_KEY = 'helios_buddy_id';
 const MY_CALL_KEY = 'helios_buddy_callsign';
@@ -355,6 +362,16 @@ async function updateMyStatus() {
   if (error) console.error(error);
 }
 
+function showNotConfigured() {
+  setupForm.hidden = true;
+  panel.hidden = true;
+  const note = document.createElement('p');
+  note.className = 'buddy-empty';
+  note.textContent = 'Buddy Link is not configured for this deployment. Add the Supabase URL and anon key to enable it.';
+  setupWrap.prepend(note);
+  setupWrap.hidden = false;
+}
+
 async function init() {
   const restored = await restoreSession();
   if (restored) {
@@ -381,4 +398,21 @@ window.addEventListener('helios:buddy-alert', (event) => {
   alertsList.prepend(item);
 });
 
-init();
+if (!buddyConfigured) {
+  showNotConfigured();
+} else {
+  const buddySection = q('#buddy');
+  const startBuddy = () => {
+    loadSupabase().then(init).catch((err) => console.error(err));
+  };
+  if (buddySection && 'IntersectionObserver' in window) {
+    const watcher = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      watcher.disconnect();
+      startBuddy();
+    }, { rootMargin: '200px 0px' });
+    watcher.observe(buddySection);
+  } else {
+    startBuddy();
+  }
+}

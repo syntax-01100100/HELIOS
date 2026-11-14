@@ -1,3 +1,5 @@
+import { fetchNasaSource, readSnapshotJson } from './client.js';
+
 const SNAPSHOT_PATH = '/data/osdr-studies.json';
 
 const PRESETS = [
@@ -13,53 +15,52 @@ export function getPresets() {
 }
 
 export function buildOsdrSearchUrl(query) {
-  const base = 'https://osdr.nasa.gov/bio/api/search/';
-  return `${base}?q=${encodeURIComponent(query)}&format=json`;
+  return `https://osdr.nasa.gov/osdr/data/search?q=${encodeURIComponent(query)}&size=20`;
 }
 
-export function buildOsdrMetadataUrl(accession) {
-  return `https://osdr.nasa.gov/bio/api/metadata/${accession}/?format=json`;
+function toStudy(hit) {
+  const s = hit?._source || {};
+  const accession = s.Accession || s['Study Identifier'];
+  if (!accession) return null;
+  const mission = typeof s.Mission === 'string' ? s.Mission : s.Mission?.Name;
+  const organism = Array.isArray(s.organism) ? s.organism.join(', ') : s.organism;
+  const assay = s['Study Assay Technology Type'];
+  return {
+    accession,
+    title: s['Study Title'] || s['Project Title'] || accession,
+    mission: mission || '',
+    organism: organism || '',
+    assay_types: assay ? [assay] : [],
+    url: `https://osdr.nasa.gov/bio/repo/data/studies/${accession}`,
+    tags: [],
+  };
 }
 
-export async function searchStudies(query) {
-  const url = buildOsdrSearchUrl(query);
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    const resp = await fetch(url, {
-      signal: controller.signal,
-      headers: { Accept: 'application/json' },
-    });
-    clearTimeout(timer);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-    return { data, status: 'live', fetchedAt: new Date().toISOString() };
-  } catch (err) {
-    return await loadSnapshotStudies(query);
-  }
+function parseOsdrHits(raw) {
+  if (!Array.isArray(raw?.hits?.hits)) throw new Error('unexpected response shape');
+  return raw.hits.hits.map(toStudy).filter(Boolean);
 }
 
-async function loadSnapshotStudies(query) {
-  try {
-    const resp = await fetch(SNAPSHOT_PATH);
-    if (!resp.ok) throw new Error('snapshot unavailable');
-    const snap = await resp.json();
-    const q = (query || '').toLowerCase();
-    const filtered = (snap.studies || []).filter((s) => {
-      if (!q) return true;
-      const haystack = [
-        s.title,
-        s.mission,
-        s.organism,
-        ...(s.tags || []),
-        ...(s.assay_types || []),
-      ].join(' ').toLowerCase();
-      return haystack.includes(q);
-    });
-    return { data: { studies: filtered }, status: 'snapshot', fetchedAt: new Date().toISOString() };
-  } catch (err) {
-    return { data: null, status: 'unavailable', fetchedAt: new Date().toISOString(), error: err.message };
-  }
+function filterSnapshot(snap, query) {
+  const q = (query || '').toLowerCase();
+  return (snap.studies || []).filter((s) => {
+    if (!q) return true;
+    const haystack = [s.title, s.mission, s.organism, ...(s.tags || []), ...(s.assay_types || [])]
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(q);
+  });
+}
+
+export function searchStudies(query) {
+  const q = (query || '').trim();
+  return fetchNasaSource({
+    cacheKey: `helios_nasa_osdr:${q.toLowerCase()}`,
+    url: buildOsdrSearchUrl(q),
+    parse: (raw) => ({ studies: parseOsdrHits(raw) }),
+    fallback: async () => ({ studies: filterSnapshot(await readSnapshotJson(SNAPSHOT_PATH), q) }),
+    fallbackStatus: 'snapshot',
+  });
 }
 
 export const ALERT_STUDY_LINKS = [

@@ -1,7 +1,3 @@
-import * as tf from '@tensorflow/tfjs';
-import * as cocoSsd from '@tensorflow-models/coco-ssd';
-import { FilesetResolver, PoseLandmarker, HandLandmarker } from '@mediapipe/tasks-vision';
-
 const q = (s) => document.querySelector(s);
 
 const video = q('#mvv');
@@ -73,6 +69,11 @@ async function ensureModels() {
   loading = true;
   indicator.textContent = 'Loading AI models (object + pose + hand)...';
   try {
+    const [tf, cocoSsd, { FilesetResolver, PoseLandmarker, HandLandmarker }] = await Promise.all([
+      import('@tensorflow/tfjs'),
+      import('@tensorflow-models/coco-ssd'),
+      import('@mediapipe/tasks-vision'),
+    ]);
     await tf.ready();
     try { await tf.setBackend('webgl'); } catch(e) {}
     const tasks = [

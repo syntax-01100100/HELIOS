@@ -134,8 +134,10 @@ q('#mv-sos-cancel')?.addEventListener('click', () => { sosPanel.hidden = true; }
 
 const authObserver = new MutationObserver(() => {
   if (!box.classList.contains('live')) {
-    box.classList.remove('authenticated');
-    box.classList.add('auth-pending');
+    if (box.classList.contains('authenticated') || !box.classList.contains('auth-pending')) {
+      box.classList.remove('authenticated');
+      box.classList.add('auth-pending');
+    }
     selectedProfile = null;
     setCrewProfile(null);
     q('#mv-profile-chip').hidden = true;

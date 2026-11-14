@@ -1,8 +1,6 @@
-import { fetchWithSnapshot, getSessionCache, setSessionCache } from './client.js';
+import { fetchNasaSource, readSnapshotJson } from './client.js';
 
 const SNAPSHOT_PATH = '/data/radlab-iss-dostel-2022-03-01.json';
-const CACHE_KEY = 'helios_nasa_radlab';
-const CACHE_MAX_AGE = 15 * 60 * 1000;
 
 const MAX_POINTS = 600;
 const SAA_BOX = { latMin: -50, latMax: 0, lonMin: -90, lonMax: 40 };
@@ -17,9 +15,7 @@ function toMs(ts) {
   return Date.parse(/[zZ]|[+-]\d\d:?\d\d$/.test(t) ? t : t + 'Z');
 }
 
-// Accepts every shape RadLab data can arrive in and returns { metadata?, data: [objects] }:
-//  - { columns:[...], index:[...], data:[[...]] }  (RadLab JSON, row arrays)
-//  - { metadata, data:[{...}] } or a plain array of objects (saved snapshot)
+// Accepts RadLab row-array JSON ({columns, data}) and saved snapshots ({data:[objects]} or an array).
 // Long series are averaged into 5-minute bins so the chart and replay stay light.
 export function normalizeRadlab(raw) {
   let rows = [];
@@ -61,51 +57,44 @@ export function normalizeRadlab(raw) {
   return { metadata, data };
 }
 
-export function buildRadlabUrl(spacecraft, instrument, startDate, endDate) {
-  const base = 'https://visualization.osdr.nasa.gov/radlab/api/';
-  const params = new URLSearchParams({
-    spacecraft: spacecraft || 'ISS',
-    instrument: instrument || 'DosTel',
-    timestamp: `>=${startDate}T00:00`,
-    timestamp2: `<${endDate}T00:00`,
-    absorbed_dose_rate: '',
-    latitude: '',
-    longitude: '',
-    altitude: '',
-    format: 'json',
+// RadLab filters put the operator inside the parameter name, e.g. timestamp>=2022-03-01T00:00
+export function buildRadlabUrl(startDate, endDate) {
+  const query = [
+    'spacecraft=ISS',
+    'instrument=DosTel',
+    `timestamp${encodeURIComponent('>=')}${startDate}T00:00`,
+    `timestamp${encodeURIComponent('<')}${endDate}T00:00`,
+    'absorbed_dose_rate',
+    'latitude',
+    'longitude',
+    'altitude',
+    'format=json',
+  ];
+  return `https://visualization.osdr.nasa.gov/radlab/api/?${query.join('&')}`;
+}
+
+function parseRadlabWindow(raw, startDate, endDate) {
+  const normalized = normalizeRadlab(raw);
+  if (normalized.data.length === 0) {
+    throw new Error(`no RadLab readings for ${startDate} to ${endDate}`);
+  }
+  return normalized;
+}
+
+// liveStatus is 'live' for the current window and 'historical' for the 2022 replay.
+// Only the replay has a saved copy of real data to fall back to.
+export function fetchRadlabWindow(startDate, endDate, liveStatus) {
+  const isReplay = liveStatus === 'historical';
+  return fetchNasaSource({
+    cacheKey: `helios_nasa_radlab:${startDate}:${endDate}`,
+    url: buildRadlabUrl(startDate, endDate),
+    parse: (raw) => parseRadlabWindow(raw, startDate, endDate),
+    liveStatus,
+    fallback: isReplay
+      ? async () => parseRadlabWindow(await readSnapshotJson(SNAPSHOT_PATH), startDate, endDate)
+      : undefined,
+    fallbackStatus: 'snapshot',
   });
-  return `${base}?spacecraft=${params.get('spacecraft')}&instrument=${params.get('instrument')}&timestamp${encodeURIComponent('>=')}${startDate}T00:00&timestamp${encodeURIComponent('<')}${endDate}T00:00&absorbed_dose_rate&latitude&longitude&altitude&format=json`;
-}
-
-export async function fetchRadlabData(startDate, endDate) {
-  const cached = getSessionCache(CACHE_KEY, CACHE_MAX_AGE);
-  if (cached) {
-    return { ...cached.data, status: 'cached', fetchedAt: new Date(cached.cachedAt).toISOString() };
-  }
-
-  const url = buildRadlabUrl('ISS', 'DosTel', startDate, endDate);
-  const result = await fetchWithSnapshot(url, SNAPSHOT_PATH);
-  result.data = normalizeRadlab(result.data);
-  if (result.data.data.length === 0) {
-    return await loadRadlabSnapshot();
-  }
-
-  if (result.status === 'live' || result.status === 'snapshot') {
-    setSessionCache(CACHE_KEY, result);
-  }
-
-  return result;
-}
-
-export async function loadRadlabSnapshot() {
-  try {
-    const resp = await fetch(SNAPSHOT_PATH);
-    if (resp.ok) {
-      const snap = await resp.json();
-      return { data: normalizeRadlab(snap), status: 'snapshot', fetchedAt: new Date().toISOString() };
-    }
-  } catch {}
-  return { data: null, status: 'unavailable', fetchedAt: new Date().toISOString() };
 }
 
 export function findPeaks(data, threshold) {

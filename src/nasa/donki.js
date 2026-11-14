@@ -1,9 +1,10 @@
-import { fetchWithSnapshot, getSessionCache, setSessionCache } from './client.js';
+import { fetchNasaJson, readSnapshotJson, getSessionCache, setSessionCache } from './client.js';
 
-const SNAPSHOT_PATH = '/data/donki-snapshot.json';
+const SAMPLE_PATH = '/data/donki-snapshot.json';
 const CACHE_KEY = 'helios_nasa_donki';
-const CACHE_MAX_AGE = 15 * 60 * 1000;
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+const FEEDS = { notifications: 'notifications', flares: 'FLR', cmes: 'CME' };
+const FEED_GAP_MS = 300;
 
 export function buildDonkiUrl(endpoint) {
   const end = new Date();
@@ -13,41 +14,57 @@ export function buildDonkiUrl(endpoint) {
   return `https://api.nasa.gov/DONKI/${endpoint}?startDate=${startStr}&endDate=${endStr}`;
 }
 
+// A feed that fails is null (shown as "--"), never zero. Status is live when at least one feed answered,
+// even if every answer is empty.
 export async function fetchDonkiData() {
-  const cached = getSessionCache(CACHE_KEY, CACHE_MAX_AGE);
-  if (cached) {
-    return { ...cached.data, status: 'cached', fetchedAt: new Date(cached.cachedAt).toISOString() };
+  const cached = getSessionCache(CACHE_KEY);
+  if (cached) return { ...cached, status: 'cached' };
+
+  const names = Object.keys(FEEDS);
+  const feeds = {};
+  const errors = [];
+  for (let i = 0; i < names.length; i++) {
+    const k = names[i];
+    if (i > 0) await new Promise((resolve) => setTimeout(resolve, FEED_GAP_MS));
+    try {
+      const value = await fetchNasaJson(buildDonkiUrl(FEEDS[k]));
+      if (Array.isArray(value)) {
+        feeds[k] = value;
+      } else {
+        feeds[k] = null;
+        errors.push(`${FEEDS[k]} unexpected response`);
+      }
+    } catch (err) {
+      feeds[k] = null;
+      errors.push(`${FEEDS[k]} ${err.message}`);
+    }
   }
 
-  const notifUrl = buildDonkiUrl('notifications');
-  const flrUrl = buildDonkiUrl('FLR');
-  const cmeUrl = buildDonkiUrl('CME');
-
-  const [notifRes, flrRes, cmeRes] = await Promise.all([
-    fetchWithSnapshot(notifUrl, SNAPSHOT_PATH),
-    fetchWithSnapshot(flrUrl, SNAPSHOT_PATH),
-    fetchWithSnapshot(cmeUrl, SNAPSHOT_PATH),
-  ]);
-
-  const anyLive = notifRes.status === 'live' || flrRes.status === 'live' || cmeRes.status === 'live';
-  const status = anyLive ? 'live' : notifRes.status === 'snapshot' ? 'snapshot' : 'unavailable';
-
-  const merged = {
-    data: {
-      notifications: notifRes.data?.notifications || notifRes.data || [],
-      flares: Array.isArray(flrRes.data) ? flrRes.data : [],
-      cmes: Array.isArray(cmeRes.data) ? cmeRes.data : [],
-    },
-    status,
-    fetchedAt: new Date().toISOString(),
-    errors: [notifRes.error, flrRes.error, cmeRes.error].filter(Boolean),
-  };
-
-  if (status === 'live' || status === 'snapshot') {
-    setSessionCache(CACHE_KEY, merged);
+  const answered = names.some((k) => feeds[k]);
+  const fetchedAt = new Date().toISOString();
+  const error = errors.length ? errors.join('; ') : undefined;
+  if (answered) {
+    const result = {
+      data: { notifications: feeds.notifications || [], flares: feeds.flares, cmes: feeds.cmes },
+      status: 'live',
+      fetchedAt,
+      error,
+    };
+    setSessionCache(CACHE_KEY, result);
+    return result;
   }
 
-  return merged;
+  try {
+    const sample = await readSnapshotJson(SAMPLE_PATH);
+    return {
+      data: { notifications: sample.notifications || [], flares: null, cmes: null },
+      status: 'sample',
+      fetchedAt,
+      error,
+    };
+  } catch {
+    return { data: null, status: 'unavailable', fetchedAt, error };
+  }
 }
 
 export function classifyFlare(flareClass) {
@@ -70,6 +87,10 @@ export function hasMajorFlare(flares) {
   });
 }
 
+function safeHttpUrl(value) {
+  return typeof value === 'string' && /^https:\/\//.test(value) ? value : null;
+}
+
 export function getLatestEvents(data) {
   const events = [];
   if (data?.flares) {
@@ -79,6 +100,7 @@ export function getLatestEvents(data) {
         class: f.classType || f.class || '—',
         time: f.beginTime || f.peakTime || f.startTime || '—',
         severity: classifyFlare(f.classType || f.class) || '',
+        url: safeHttpUrl(f.link),
       });
     }
   }
@@ -89,6 +111,7 @@ export function getLatestEvents(data) {
         class: 'CME',
         time: c.startTime || c.time || '—',
         severity: '',
+        url: safeHttpUrl(c.link),
       });
     }
   }
@@ -99,6 +122,7 @@ export function getLatestEvents(data) {
         class: n.class || n.messageID || '—',
         time: n.messageIssueTime || n.issueTime || '—',
         severity: classifyFlare(n.class) || '',
+        url: safeHttpUrl(n.messageURL),
       });
     }
   }
