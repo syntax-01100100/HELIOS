@@ -1,0 +1,3 @@
+[functions.nasa-proxy]
+verify_jwt = false
+entrypoint = "./functions/nasa-proxy/index.ts"
