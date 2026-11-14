@@ -1,6 +1,9 @@
 import '../shared/chrome.js';
 import './health.css';
 import { mountCheckin } from './checkin.js';
+import { mountBodyMap } from './bodymap.js';
+import { mountTrends } from './trends.js';
+import { mountGame } from './game.js';
 import { ENVIRONMENTS, delayNote, evaluateAll } from './ranges.js';
 import { readinessScore } from './rules.js';
 import { dayKey, currentStreak, loadCheckins, loadEnvironment, saveEnvironment } from './store.js';
@@ -48,7 +51,10 @@ tabButtons.forEach((btn) => {
   });
 });
 
-window.addEventListener('hashchange', () => showTab(currentTab()));
+window.addEventListener('hashchange', () => {
+  showTab(currentTab());
+  refreshAll();
+});
 
 ENVIRONMENTS.forEach((env) => {
   envSelect.add(new Option(env.label, env.id));
@@ -56,12 +62,23 @@ ENVIRONMENTS.forEach((env) => {
 envSelect.value = loadEnvironment();
 envSelect.addEventListener('change', () => {
   saveEnvironment(envSelect.value);
-  renderStrip();
   checkin.refreshResults();
+  refreshAll();
 });
 
 emOpen.addEventListener('click', () => emDialog.showModal());
 
-const checkin = mountCheckin(document.querySelector('#panel-checkin'), renderStrip);
+const checkin = mountCheckin(document.querySelector('#panel-checkin'), () => refreshAll());
+const body = mountBodyMap(document.querySelector('#panel-body'));
+const trends = mountTrends(document.querySelector('#panel-trends'));
+const game = mountGame(document.querySelector('#panel-game'));
+
+function refreshAll() {
+  renderStrip();
+  body.refresh();
+  trends.refresh();
+  game.refresh();
+}
+
 renderStrip();
 showTab(currentTab());

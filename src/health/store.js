@@ -34,6 +34,12 @@ export function addCheckin(entry) {
   return write(CHECKIN_KEY, [...loadCheckins(), entry]);
 }
 
+export const CHECKINS_CHANGED = 'helios:checkins-changed';
+
+export function saveCheckins(list) {
+  return write(CHECKIN_KEY, list);
+}
+
 export function clearCheckins() {
   try {
     localStorage.removeItem(CHECKIN_KEY);
