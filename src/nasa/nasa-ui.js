@@ -7,7 +7,7 @@ import { PROVENANCE_SOURCES, REFERENCES, NASA_DATA_FIELD_TEXT, buildProvenanceTa
 import { REFERENCE_RANGES, getStatus, getSource } from '../sim/reference.js';
 import { raise } from '../sim/alerts.js';
 
-const RAD_THRESHOLD = 0.08;
+const RAD_THRESHOLD = 50; // µGy/h, illustrative HELIOS demo threshold (not a NASA limit)
 let radChartCanvas = null;
 let radData = null;
 let radReplayIdx = 0;
@@ -23,8 +23,8 @@ function badge(type) {
 }
 
 function statusDot(status) {
-  const map = { live: 'nasa-dot-live', snapshot: 'nasa-dot-snap', cached: 'nasa-dot-live', unavailable: 'nasa-dot-off', historical: 'nasa-dot-hist' };
-  const labels = { live: 'LIVE', snapshot: 'SNAPSHOT', cached: 'CACHED', unavailable: 'OFFLINE', historical: 'HISTORICAL' };
+  const map = { live: 'nasa-dot-live', snapshot: 'nasa-dot-snap', sample: 'nasa-dot-snap', cached: 'nasa-dot-live', unavailable: 'nasa-dot-off', historical: 'nasa-dot-hist' };
+  const labels = { live: 'LIVE', snapshot: 'SNAPSHOT', sample: 'SAMPLE', cached: 'CACHED', unavailable: 'OFFLINE', historical: 'HISTORICAL' };
   return `<span class="nasa-dot ${map[status] || 'nasa-dot-off'}">${labels[status] || status}</span>`;
 }
 
@@ -61,7 +61,7 @@ function renderRadlationChart() {
   ctx.fillStyle = '#E89A12';
   ctx.font = '11px Chakra Petch';
   ctx.textAlign = 'left';
-  ctx.fillText('advisory ' + RAD_THRESHOLD + ' µGy/h', pad + 4, thresholdY - 4);
+  ctx.fillText('demo advisory ' + RAD_THRESHOLD + ' µGy/h', pad + 4, thresholdY - 4);
 
   const visibleCount = radReplayIdx > 0 ? Math.min(radReplayIdx, points.length) : points.length;
   ctx.strokeStyle = '#19E3FF';
@@ -103,8 +103,8 @@ function renderRadlationChart() {
     ctx.fillText(hh.slice(0, 5), x, h - 8);
   }
   ctx.textAlign = 'right';
-  ctx.fillText(maxR.toFixed(3), pad - 4, pad + 10);
-  ctx.fillText(minR.toFixed(3), pad - 4, h - pad + 4);
+  ctx.fillText(maxR.toFixed(2), pad - 4, pad + 10);
+  ctx.fillText(minR.toFixed(2), pad - 4, h - pad + 4);
 }
 
 function renderRadiationSection(container) {
@@ -114,7 +114,7 @@ function renderRadiationSection(container) {
       <h3>ISS Radiation — NASA OSDR RadLab</h3>
       ${statusDot(radStatus)}
     </div>
-    <p class="nasa-desc">Absorbed dose rate from the ISS DosTel instrument. Data is fetched from the NASA OSDR RadLab API with a snapshot fallback for offline use.</p>
+    <p class="nasa-desc">Absorbed dose rate from the ISS DosTel instrument. Real RadLab readings for 2022-03-01 (5-minute averages of DosTel1 and DosTel2), fetched from the NASA OSDR RadLab API with a saved copy of the same real data as fallback. The advisory line is an illustrative HELIOS demo threshold, not a NASA limit.</p>
     <div class="nasa-rad-grid">
       <div class="nasa-rad-chart-wrap">
         <canvas id="nasa-rad-chart"></canvas>
@@ -139,19 +139,19 @@ function renderRadiationSection(container) {
     const saaEvents = findSAAEvents(points);
     const peaks = findPeaks(points, RAD_THRESHOLD);
     statsEl.innerHTML = `
-      <div class="nasa-stat"><b>${maxD ? Number(maxD.absorbed_dose_rate).toFixed(4) : '--'}</b><span>Max dose rate (µGy/h)</span></div>
-      <div class="nasa-stat"><b>${avgD ? avgD.toFixed(4) : '--'}</b><span>Average (µGy/h)</span></div>
-      <div class="nasa-stat"><b>${saaEvents.length}</b><span>SAA passages</span></div>
+      <div class="nasa-stat"><b>${maxD ? Number(maxD.absorbed_dose_rate).toFixed(2) : '--'}</b><span>Max dose rate (µGy/h)</span></div>
+      <div class="nasa-stat"><b>${avgD ? avgD.toFixed(2) : '--'}</b><span>Average (µGy/h)</span></div>
+      <div class="nasa-stat"><b>${saaEvents.length}</b><span>SAA readings (5-min bins)</span></div>
       <div class="nasa-stat"><b>${peaks.length}</b><span>Peaks above threshold</span></div>
     `;
-    sourceEl.textContent = `Source: NASA OSDR RadLab · ${radStatus === 'live' ? 'live fetch' : radStatus === 'snapshot' ? 'snapshot fallback' : radStatus === 'cached' ? 'session cache' : 'unavailable'}`;
+    sourceEl.textContent = `Source: NASA OSDR RadLab · ${radStatus === 'live' ? 'live fetch' : radStatus === 'snapshot' ? 'saved copy of real NASA data' : radStatus === 'cached' ? 'session cache' : 'unavailable'}`;
 
     if (radStatus === 'live' || radStatus === 'cached') {
       const highPeaks = peaks.slice(0, 3);
       for (const p of highPeaks) {
         const v = Number(p.absorbed_dose_rate);
         if (v >= RAD_THRESHOLD) {
-          raise('ADVISORY', 'rad', `Radiation dose rate ${v.toFixed(4)} µGy/h exceeds advisory threshold`, 'NASA');
+          raise('ADVISORY', 'rad', `Replay of NASA RadLab 2022-03-01: ${v.toFixed(2)} µGy/h exceeds demo advisory threshold`, 'NASA');
           break;
         }
       }
@@ -195,7 +195,7 @@ function renderSpaceWeatherSection(container) {
     <div class="nasa-section-head">
       ${badge('real')}
       <h3>Space Weather — NASA DONKI</h3>
-      ${statusDot(donkiStatus)}
+      ${statusDot(donkiStatus === 'snapshot' ? 'sample' : donkiStatus)}
     </div>
     <p class="nasa-desc">Solar flares, coronal mass ejections and space weather notifications from NASA's DONKI API (last 7 days).</p>
     <div class="nasa-sw-grid">
@@ -215,7 +215,7 @@ function renderSpaceWeatherSection(container) {
     <div class="nasa-sw-events" id="nasa-sw-events"></div>
     <div class="nasa-rad-controls">
       <button class="xb" id="nasa-sw-refresh" type="button">REFETCH</button>
-      <span class="nasa-source-label">Source: NASA DONKI · ${donkiStatus === 'live' ? 'live fetch' : donkiStatus === 'snapshot' ? 'snapshot fallback' : donkiStatus === 'cached' ? 'session cache' : 'unavailable'}</span>
+      <span class="nasa-source-label">Source: NASA DONKI · ${donkiStatus === 'live' ? 'live fetch' : donkiStatus === 'snapshot' ? 'illustrative sample, not live NASA data' : donkiStatus === 'cached' ? 'session cache' : 'unavailable'}</span>
     </div>
     <p class="nasa-disclaimer">Contains data from NASA. Not endorsed by NASA.</p>
   `;
@@ -562,7 +562,7 @@ function updateHudTiles() {
     const maxD = getMaxDoseRate(points);
     if (maxD) {
       const v = Number(maxD.absorbed_dose_rate);
-      radValEl.textContent = v.toFixed(4) + ' µGy/h';
+      radValEl.textContent = v.toFixed(2) + ' µGy/h';
       const st = getStatus('radiation', v);
       radStatEl.textContent = st.toUpperCase();
       radStatEl.className = 'hud-row hud-rad-' + st;

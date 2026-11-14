@@ -65,9 +65,9 @@ export const REFERENCES = [
 ];
 
 export const NASA_DATA_FIELD_TEXT = `HELIOS uses the following NASA data sources:
-1. NASA OSDR RadLab API (visualization.osdr.nasa.gov/radlab/api/) — ISS DosTel absorbed dose rate data for 2022-03-01, replayed as a 24-hour time series with ground-track map. Historical data.
-2. NASA DONKI API (api.nasa.gov/DONKI/) — Space weather notifications, solar flares (FLR) and coronal mass ejections (CME) for the last 7 days. Live data with snapshot fallback.
-3. NASA OSDR search API (osdr.nasa.gov/bio/api/search/) — Spaceflight omics studies (Inspiration4, cardiovascular, sleep, immune, bone) for the evidence panel. Live data with verified snapshot fallback.
+1. NASA OSDR RadLab API (visualization.osdr.nasa.gov/radlab/api/) — ISS DosTel absorbed dose rate data for 2022-03-01, replayed as a 24-hour time series with ground-track map. Historical data (real readings, 5-minute averages).
+2. NASA DONKI API (api.nasa.gov/DONKI/) — Space weather notifications, solar flares (FLR) and coronal mass ejections (CME) for the last 7 days. Live data; if unreachable, clearly labeled illustrative sample entries are shown instead.
+3. NASA OSDR search API (osdr.nasa.gov/bio/api/search/) — Spaceflight omics studies (Inspiration4, cardiovascular, sleep, immune, bone) for the evidence panel. Live search with a short curated fallback list.
 4. NASA Human Research Program — Five hazards of human spaceflight mapped to HELIOS capabilities. Reference framework.
 5. NASA-STD-3001 — Space Flight Human-System Standard for physiological limits context. Reference standard.
 Contains data from NASA. Not endorsed by NASA. No NASA logos or branding used.`;

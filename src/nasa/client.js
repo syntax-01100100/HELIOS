@@ -16,7 +16,11 @@ function needsProxy(url) {
 
 function getProxyUrl(url) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  if (!supabaseUrl) return url;
+  if (!supabaseUrl) {
+    const u = new URL(url);
+    if (u.hostname === 'api.nasa.gov' && !u.searchParams.has('api_key')) u.searchParams.set('api_key', 'DEMO_KEY');
+    return u.toString();
+  }
   return `${supabaseUrl}/functions/v1/nasa-proxy?url=${encodeURIComponent(url)}`;
 }
 

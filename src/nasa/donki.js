@@ -5,16 +5,12 @@ const CACHE_KEY = 'helios_nasa_donki';
 const CACHE_MAX_AGE = 15 * 60 * 1000;
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
-function getApiKey() {
-  return import.meta.env.VITE_NASA_API_KEY || 'DEMO_KEY';
-}
-
 export function buildDonkiUrl(endpoint) {
   const end = new Date();
   const start = new Date(end.getTime() - SEVEN_DAYS_MS);
   const startStr = start.toISOString().slice(0, 10);
   const endStr = end.toISOString().slice(0, 10);
-  return `https://api.nasa.gov/DONKI/${endpoint}?startDate=${startStr}&endDate=${endStr}&api_key=${getApiKey()}`;
+  return `https://api.nasa.gov/DONKI/${endpoint}?startDate=${startStr}&endDate=${endStr}`;
 }
 
 export async function fetchDonkiData() {
@@ -68,7 +64,7 @@ export function classifyFlare(flareClass) {
 export function hasMajorFlare(flares) {
   if (!Array.isArray(flares)) return false;
   return flares.some((f) => {
-    const cls = f.class || f.flrID || '';
+    const cls = f.classType || f.class || '';
     const c = classifyFlare(cls);
     return c === 'M' || c === 'X';
   });
@@ -80,9 +76,9 @@ export function getLatestEvents(data) {
     for (const f of data.flares) {
       events.push({
         type: 'Solar Flare',
-        class: f.class || f.peakTime || '—',
+        class: f.classType || f.class || '—',
         time: f.beginTime || f.peakTime || f.startTime || '—',
-        severity: classifyFlare(f.class) || '',
+        severity: classifyFlare(f.classType || f.class) || '',
       });
     }
   }
@@ -101,7 +97,7 @@ export function getLatestEvents(data) {
       events.push({
         type: n.messageType || 'Notification',
         class: n.class || n.messageID || '—',
-        time: n.issueTime || '—',
+        time: n.messageIssueTime || n.issueTime || '—',
         severity: classifyFlare(n.class) || '',
       });
     }

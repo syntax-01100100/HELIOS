@@ -1,1 +1,30 @@
-{"metadata":{"source":"NASA DONKI","url":"https://api.nasa.gov/DONKI/","note":"Snapshot of space weather notifications. Contains data from NASA. Not endorsed by NASA.","snapshot":true,"date":"2026-11-13"},"notifications":[{"messageType":"FLR","messageID":"FLR_2026-11-13_M2.1","issueTime":"2026-11-13T08:42:00Z","class":"M2.1","sourceLocation":"N15E22","url":"https://api.nasa.gov/DONKI/notifications/FLR_2026-11-13_M2.1"},{"messageType":"CME","messageID":"CME_2026-11-12","issueTime":"2026-11-12T14:30:00Z","note":"Coronal mass ejection detected by LASCO C2","url":"https://api.nasa.gov/DONKI/notifications/CME_2026-11-12"},{"messageType":"FLR","messageID":"FLR_2026-11-11_C5.8","issueTime":"2026-11-11T22:15:00Z","class":"C5.8","sourceLocation":"S08W15","url":"https://api.nasa.gov/DONKI/notifications/FLR_2026-11-11_C5.8"}]}
+{
+ "metadata": {
+  "source": "ILLUSTRATIVE SAMPLE — not NASA data",
+  "note": "Placeholder entries shown only when the live NASA DONKI API cannot be reached. These are NOT real space weather events.",
+  "snapshot": true,
+  "sample": true
+ },
+ "notifications": [
+  {
+   "messageType": "SAMPLE FLR",
+   "messageID": "SAMPLE-1",
+   "issueTime": "illustrative",
+   "class": "M2.1",
+   "note": "Sample entry"
+  },
+  {
+   "messageType": "SAMPLE CME",
+   "messageID": "SAMPLE-2",
+   "issueTime": "illustrative",
+   "note": "Sample entry"
+  },
+  {
+   "messageType": "SAMPLE FLR",
+   "messageID": "SAMPLE-3",
+   "issueTime": "illustrative",
+   "class": "C5.8",
+   "note": "Sample entry"
+  }
+ ]
+}

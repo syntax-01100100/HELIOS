@@ -44,6 +44,15 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    if (targetUrl.hostname === "api.nasa.gov") {
+      if (!targetUrl.pathname.startsWith("/DONKI/")) {
+        return new Response(
+          JSON.stringify({ error: "Only /DONKI/ endpoints are allowed on api.nasa.gov" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     const cacheKey = `nasa-proxy:${targetParam}`;
     const cached = await getCachedResponse(cacheKey);
     if (cached) {
@@ -56,6 +65,11 @@ Deno.serve(async (req: Request) => {
           "Cache-Control": `public, max-age=${CACHE_TTL_SECONDS}`,
         },
       });
+    }
+
+    if (targetUrl.hostname === "api.nasa.gov") {
+      targetUrl.searchParams.delete("api_key");
+      targetUrl.searchParams.set("api_key", Deno.env.get("NASA_API_KEY") || "DEMO_KEY");
     }
 
     const upstream = await fetch(targetUrl.toString(), {

@@ -65,44 +65,36 @@ async function loadSnapshotStudies(query) {
 export const ALERT_STUDY_LINKS = [
   {
     alertType: 'Heart Rate',
-    reason: 'Cardiovascular deconditioning occurs during long-duration spaceflight.',
+    reason: 'Inspiration4 crew serum cytokine arrays include cardiac markers. A starting point, not a heart-rate study.',
     tags: ['cardiovascular', 'Inspiration4'],
     links: [
-      { accession: 'OSD-259', title: 'Inspiration4 crew multi-omics', url: 'https://osdr.nasa.gov/bio/studies/osd-259/' },
-      { accession: 'OSD-154', title: 'Multi-omics of Expedition 43-46 crew', url: 'https://osdr.nasa.gov/bio/studies/osd-154/' },
+      { accession: 'OSD-575', title: 'SpaceX Inspiration4 Blood Serum Metabolic Panel and Immune/Cardiac Cytokine Arrays', url: 'https://osdr.nasa.gov/bio/repo/data/studies/OSD-575' },
     ],
   },
   {
     alertType: 'SpO₂',
-    reason: 'Oxygen saturation changes are studied in the context of suit atmosphere and hypoxia research.',
-    tags: ['cardiovascular'],
-    links: [
-      { accession: 'OSD-154', title: 'Multi-omics of Expedition 43-46 crew', url: 'https://osdr.nasa.gov/bio/studies/osd-154/' },
-    ],
+    reason: 'No verified OSDR study is linked yet. Search OSDR for oxygen and hypoxia research.',
+    tags: [],
+    links: [],
   },
   {
     alertType: 'Temperature',
-    reason: 'Thermal regulation in space is studied under suit and habitat thermal control research.',
-    tags: ['cardiovascular'],
-    links: [
-      { accession: 'OSD-154', title: 'Multi-omics of Expedition 43-46 crew', url: 'https://osdr.nasa.gov/bio/studies/osd-154/' },
-    ],
+    reason: 'No verified OSDR study is linked yet. Search OSDR for thermal regulation research.',
+    tags: [],
+    links: [],
   },
   {
     alertType: 'Radiation',
-    reason: 'Radiation exposure and its effects on astronaut health are a primary NASA HRP risk.',
-    tags: ['cardiovascular', 'immune', 'bone'],
+    reason: 'Radiation exposure is a primary NASA HRP risk. This Inspiration4 whole-blood study (genome sequencing, clonal hematopoiesis) is a genomics starting point, not a dosimetry study.',
+    tags: ['Inspiration4', 'immune'],
     links: [
-      { accession: 'OSD-379', title: 'Spaceflight effects on immune cell function', url: 'https://osdr.nasa.gov/bio/studies/osd-379/' },
-      { accession: 'OSD-232', title: 'Bone and muscle transcriptomics in spaceflight', url: 'https://osdr.nasa.gov/bio/studies/osd-232/' },
+      { accession: 'OSD-569', title: 'Whole Blood Measurements from the SpaceX Inspiration4 Mission', url: 'https://osdr.nasa.gov/bio/repo/data/studies/OSD-569' },
     ],
   },
   {
     alertType: 'Sleep / Inactivity',
-    reason: 'Sleep and circadian disruption are well-documented in long-duration spaceflight.',
+    reason: 'No verified OSDR study is linked yet. Search OSDR for sleep and circadian research.',
     tags: ['sleep'],
-    links: [
-      { accession: 'OSD-438', title: 'Sleep and circadian rhythm in long-duration spaceflight', url: 'https://osdr.nasa.gov/bio/studies/osd-438/' },
-    ],
+    links: [],
   },
 ];

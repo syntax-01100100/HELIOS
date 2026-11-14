@@ -339,6 +339,25 @@ html[dir=rtl] .fnav a{padding:8px 9px 8px 16px}
 .nasa-refs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
 .nasa-ref-link{padding:6px 12px;border:1px solid var(--ln);border-radius:99px;font:600 13px 'Chakra Petch',monospace;color:var(--fg);text-decoration:none;transition:border-color .25s,transform .25s}
 .nasa-ref-link:hover{border-color:var(--teal);transform:translateY(-2px)}
+#helios-tour[hidden],#helios-tour-launch[hidden]{display:none}
+.ht-backdrop{position:fixed;inset:0;z-index:100000;background:rgba(10,19,48,.55);opacity:0;pointer-events:none;transition:opacity .3s}
+.ht-backdrop.on{opacity:1;pointer-events:auto}
+.ht-card{position:fixed;z-index:100001;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:min(420px,calc(100vw - 32px));max-height:min(70vh,560px);overflow:auto;background:var(--sf);color:var(--fg);border:1px solid var(--teal);border-radius:16px;padding:18px 20px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.ht-card h3{font:700 18px 'Chakra Petch',monospace;margin:6px 0 8px}
+.ht-card p{font-size:15px;line-height:1.55;margin:0 0 10px}
+.ht-note{font-size:13px!important;color:var(--mut)}
+.ht-top{display:flex;justify-content:space-between;align-items:center}
+.ht-count{font:700 12px 'Chakra Petch',monospace;letter-spacing:.08em;color:var(--teal)}
+.ht-x{background:none;border:0;color:var(--fg);font-size:24px;line-height:1;cursor:pointer;padding:2px 8px}
+.ht-dots{display:flex;gap:5px;margin:12px 0}
+.ht-dots i{width:7px;height:7px;border-radius:50%;background:var(--ln)}
+.ht-dots i.on{background:var(--teal)}
+.ht-btns{display:flex;gap:8px;align-items:center}
+.ht-sp{flex:1}
+#helios-tour-launch{position:fixed;z-index:99990;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));font:700 12px 'Chakra Petch',monospace;letter-spacing:.08em;padding:9px 14px;border-radius:99px;border:1px solid var(--teal);background:var(--sf);color:var(--fg);cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+#helios-tour-launch:hover{transform:translateY(-2px)}
+@media (max-width:560px){.ht-card{right:16px;left:16px;width:auto;max-height:62vh}}
+@media (prefers-reduced-motion:reduce){.ht-backdrop{transition:none}#helios-tour-launch:hover{transform:none}}
 .nasa-data-field{background:var(--night);color:#C9D8F5;border-radius:12px;padding:16px 20px;font:500 13px/1.6 'Roboto Condensed',monospace;overflow-x:auto;white-space:pre-wrap}
 .nasa-badge-legend{margin-top:24px;padding-top:20px;border-top:1px solid var(--ln)}
 .nasa-badge-legend-items{display:flex;flex-direction:column;gap:10px;margin-top:10px}
@@ -629,7 +648,7 @@ html,body{max-width:100%;overflow-x:clip}
   .hero .chip{margin-inline:auto}
   .hero .row,.hero .flow{justify-content:center}
 }
-</style><meta property="og:type" content="website"><meta property="og:title" content="HELIOS – helmet-integrated health module for orbital safety"><meta property="og:description" content="A helmet-integrated module that analyses astronaut health signals on the device and warns through the visor, vibration and sound. Interactive prototype simulation, not a medical device."><meta name="twitter:card" content="summary"></head>
+</style><meta property="og:type" content="website"><meta property="og:title" content="HELIOS – helmet-integrated health module for orbital safety"><meta property="og:description" content="A helmet-integrated module that analyses astronaut health signals on the device and warns through the visor, vibration and sound. Interactive prototype simulation, not a medical device."><meta name="twitter:card" content="summary"><meta property="og:image" content="https://bolt.new/static/og_default.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://bolt.new/static/og_default.png"></head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="ico" viewBox="0 0 48 48"><path d="M24 4a18 18 0 00-18 18v14a4 4 0 004 4h28a4 4 0 004-4V22A18 18 0 0024 4z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M10 28a14 14 0 0128 0" fill="none" stroke="currentColor" stroke-width="2" opacity=".4"/><rect x="14" y="20" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="24" cy="27" r="4" fill="none" stroke="#19E3FF" stroke-width="2"/><path d="M20 20v-4M28 20v-4M24 34v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14 27h-4M34 27h4" stroke="#19E3FF" stroke-width="2" stroke-linecap="round"/><path d="M18 38v4M22 38v2M26 38v4M30 38v2" stroke="#19E3FF" stroke-width="1.5" stroke-linecap="round"/></symbol></svg>
 <header><div class="w nav">
@@ -1524,6 +1543,7 @@ q('#rsend').onclick=function(){rst();q('#rm').textContent='Sending alert and liv
  at(function(){st(0,'40 m · responding','g');st(1,'85 m · standing by','a');q('#rm').textContent='Unit 02 is responding.';var n=10;(function step(){if(n<=0){mv(0,.9,150);st(0,'on site','g');q('#rm').textContent='Unit 02 is on site. Buddy oxygen line and emergency kit in use (simulated).';return}mv(0,1-n/10,150);q('#rm').textContent='Unit 02 responding · ETA '+n+' s';n--;T.push(setTimeout(step,1000))})()},3200)};
 rst();})();</script><script type="module" src="/src/sim/main.js"></script><script type="module" src="/src/hw/sensor.js"></script><script type="module" src="/src/cam/vision.js"></script><script type="module" src="/src/cam/hud.js"></script><script type="module" src="/src/cam/mission.js"></script><script type="module" src="/src/buddy/buddy.js"></script><script type="module" src="/src/nasa/nasa-ui.js"></script>
 <script type="module">import { initNasaUI } from '/src/nasa/nasa-ui.js'; initNasaUI();</script>
+<script type="module">import { initTutorial } from '/src/tutorial/tutorial.js'; initTutorial();</script>
 <script type="module">
 import { setDetectionsCallback, setSceneAnalysisCallback, stopVisionDetection, clearSelection, setDetectionMode } from '/src/cam/vision.js';
 import { startHud, stopHud, setMode, setHwValues, setHwConnected, setDetectionData, setSceneText } from '/src/cam/hud.js';
