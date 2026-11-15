@@ -156,6 +156,8 @@ ol{margin:0;padding-left:20px}
 .em-dialog form{margin-top:16px}
 .foot{max-width:1000px;margin:0 auto;padding:24px clamp(18px,4vw,40px) 120px;border-top:1px solid var(--ln);display:flex;flex-direction:column;gap:6px}
 .credit{font-size:13px;color:var(--mut)}
+.lang-btn{min-height:44px;padding:0 14px;border-radius:999px;border:1.5px solid var(--ln);background:var(--sf);color:var(--fg);font:inherit;font-weight:500;cursor:pointer;white-space:nowrap}
+.lang-btn:hover{border-color:var(--sun)}
 @media (min-width:640px){
   .strip{grid-template-columns:repeat(4,1fr)}
   .ci-grid{grid-template-columns:repeat(2,1fr)}

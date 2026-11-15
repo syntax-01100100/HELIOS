@@ -677,7 +677,7 @@ html,body{max-width:100%;overflow-x:clip}
 <header class="hd"><div class="w nav">
  <a class="logo" href="#top" aria-label="Helios هيليوس"><svg width="40" height="40"><use href="#ico"/></svg><span class="lt"><b>Helios</b><span>هيليوس</span></span></a>
  <nav class="links" id="lk" aria-label="Main"><a href="#ov">Overview</a><a href="health.html#checkin">Health Check</a><a href="health.html#body">Body Map</a><a href="health.html#game">Mission Game</a><a href="#nasa-data-section">NASA Data</a></nav>
- <button class="pill" id="lb" hidden>EN</button>
+ <button class="pill" id="lb" data-lang-toggle data-i18n="lang.toggle" data-i18n-attr="aria-label|lang.toggleLabel">العربية</button>
  <button class="pill tg" id="th" type="button" aria-label="Switch to dark mode"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" fill="currentColor"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
  <button class="pill menu" id="mn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="dr"><span class="bars" aria-hidden="true"></span></button>
 </div><div class="drawer" id="dr" hidden><div class="dr-group"><p class="dr-h">HELIOS Helmet</p><a href="#tile">Module</a><a href="#mv">Mission View</a><a href="#sim">Simulation</a><a href="#sc">Scenario</a><a href="#join">Crew</a><a href="#buddy">Buddy Link</a><a href="#vision">Roadmap</a><a href="#pilot">Join the build</a></div><div class="dr-group"><p class="dr-h">Crew Health</p><a href="health.html#checkin">Health Check</a><a href="health.html#body">Body Map</a><a href="health.html#trends">Trends</a><a href="health.html#game">Mission Game</a></div></div><i id="pg"></i></header>
@@ -964,8 +964,8 @@ function num(el,v,d){var a=parseFloat((el.dataset.v||'0')),t0=performance.now();
 /* language + theme */
 function setLang(l){lang=l;var h=document.documentElement;h.lang=l;h.dir=l==='ar'?'rtl':'ltr';$$('[data-ar]').forEach(function(e){e.innerHTML=l==='ar'?e.dataset.ar:e.dataset.en});
  var ph={ar:['الاسم','البريد الإلكتروني']},ls=$$('#pf label.f');['Name','Email'].forEach(function(n,i){ls[i].firstChild.textContent=l==='ar'?ph.ar[i]:n});
- $('#lb').textContent=l==='ar'?'English':'العربية';updTh();split($('h1'));subs.forEach(function(f){f()});try{localStorage.setItem('sl',l)}catch(e){}}
-$('#lb').onclick=function(){setLang(lang==='ar'?'en':'ar')};
+ updTh();split($('h1'));subs.forEach(function(f){f()})}
+addEventListener('helios:lang',function(e){setLang(e.detail.lang)});
 function updTh(){var d=document.documentElement.dataset.theme==='dark';$('#th').setAttribute('aria-label',d?L('Switch to light mode','التبديل إلى الوضع الفاتح'):L('Switch to dark mode','التبديل إلى الوضع الداكن'))}
 function setTheme(t,save){document.documentElement.dataset.theme=t;updTh();if(save)try{localStorage.setItem('st',t)}catch(e){}}
 $('#th').onclick=function(){var h=document.documentElement;h.classList.add('tt');setTimeout(function(){h.classList.remove('tt')},800);setTheme(h.dataset.theme==='dark'?'light':'dark',true)};
@@ -1117,7 +1117,6 @@ $$('input[type=range]').forEach(function(i){});impact();
 var sl;try{sl=localStorage.getItem('sl')}catch(e){}
 var st0;try{st0=localStorage.getItem('st')}catch(e){}
 document.documentElement.dataset.theme=st0==='dark'?'dark':'light';
-setLang('en');
 /* scroll reveal, progress bar, header shadow */
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;var t=e.target;t.classList.add('in');io.unobserve(t);if(t.id==='pr'){['p1','p2','p3'].forEach(function(i){$('#'+i).dataset.v=0});price()}if(t.id==='ib'){['o1','o2','o3','o4'].forEach(function(i){$('#'+i).dataset.v=0});impact()}})},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
 $('#o1').parentNode.parentNode.id='ib';
@@ -1414,7 +1413,6 @@ setTimeout(function(){document.documentElement.classList.remove('ld-hold')},4500
 <style id="hx">
 :root{--stg:radial-gradient(120% 90% at 50% 100%,#fbf3e4,#e9d6b5)}
 :root[data-theme="dark"]{--stg:radial-gradient(120% 90% at 50% 100%,#2A2420,#0E0D0C);--sun:#F5A83A;--teal:#2DD4BF;--on:#1A1204}
-#lb{display:none}
 #stage{background:var(--stg);border:1px solid var(--ln);box-shadow:0 30px 60px -30px rgba(10,19,48,.45)}
 .hud{color:var(--mut)}
 h1,h2,h3,.ld-in b,.bm,.mq-g span,.big b,.pv,.manifesto,.tl h3,.st b,.eyebrow,.btn,.tab,.lt b{font-family:'Chakra Petch','Roboto Condensed',sans-serif}
@@ -2257,5 +2255,6 @@ window.heliosMvx={showAlert:showAlert,acknowledgeAlert:acknowledgeAlert,logEvent
 })();
 </script>
 <script type="module" src="/src/shared/chrome.js"></script>
+<script type="module">import { initI18n } from '/src/shared/i18n.js'; document.addEventListener('DOMContentLoaded', initI18n);</script>
 </body>
 </html>

@@ -1,48 +1,30 @@
-import { INDICATORS, STATUS, formatValue, statusOf } from './ranges.js';
+import { INDICATORS, EXTRA_INDICATORS, STATUS, formatValue, statusOf } from './ranges.js';
 import { COLORS } from './common.js';
-import { dayKey, loadCheckins, saveCheckins } from './store.js';
+import { loadCheckins, saveCheckins } from './store.js';
+import { analyzeDrift } from './drift.js';
+import { buildSample } from './sample.js';
+import { t, getLang, translateIn } from '../shared/i18n.js';
 
 const RANGES = [7, 30];
-const SAMPLE_DAYS = 14;
 const CHART_H = 260;
 const PAD = { top: 16, right: 16, bottom: 32, left: 52 };
 const DAY_MS = 86400000;
 const LINE = '#3F51A8';
-
-function buildSample(now = new Date()) {
-  const entries = [];
-  for (let i = SAMPLE_DAYS - 1; i >= 0; i -= 1) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    d.setHours(8, 0, 0, 0);
-    const values = {
-      hr: Math.round(68 + Math.sin(i * 0.9) * 6),
-      spo2: Math.round(97 - Math.abs(Math.cos(i)) * 1.5),
-      temp: Number((36.6 + Math.sin(i * 0.9) * 0.3).toFixed(1)),
-      sys: Math.round(118 + Math.sin(i * 0.9) * 8),
-      dia: Math.round(76 + Math.sin(i * 0.9) * 5),
-      glucose: Math.round(92 + Math.cos(i * 0.7) * 8),
-      sleep: Number((7.2 + Math.cos(i * 1.3) * 0.8).toFixed(1)),
-      mood: Math.min(5, Math.max(1, Math.round(3.5 + Math.sin(i * 0.5) * 1.5))),
-    };
-    entries.push({ date: dayKey(d), at: d.toISOString(), sample: true, values });
-  }
-  return entries;
-}
+const METRICS = [...INDICATORS, ...EXTRA_INDICATORS];
 
 function template() {
   return `
     <div class="tr-intro">
-      <h2>Trends</h2>
-      <p class="muted">See how one reading moves over time. Green, amber and red bands show the demo ranges.</p>
+      <h2 data-i18n="trend.title">Trends</h2>
+      <p class="muted" data-i18n="trend.intro">See how one reading moves over time. Green, amber and red bands show the demo ranges.</p>
     </div>
     <div class="tr-controls">
       <label class="field">
-        <span>Reading</span>
-        <select id="tr-metric">${INDICATORS.map((ind) => `<option value="${ind.key}">${ind.label}</option>`).join('')}</select>
+        <span data-i18n="trend.reading">Reading</span>
+        <select id="tr-metric">${METRICS.map((ind) => `<option value="${ind.key}">${ind.label}</option>`).join('')}</select>
       </label>
-      <div class="seg" role="group" aria-label="Time range">
-        ${RANGES.map((d, i) => `<button type="button" data-days="${d}" aria-pressed="${i === 0}">${d} days</button>`).join('')}
+      <div class="seg" role="group" data-i18n-attr="aria-label|trend.range" aria-label="Time range">
+        ${RANGES.map((d, i) => `<button type="button" data-days="${d}" aria-pressed="${i === 0}">${t('trend.days', { d })}</button>`).join('')}
       </div>
     </div>
     <div class="tr-chart">
@@ -51,17 +33,40 @@ function template() {
     </div>
     <p class="tr-summary" id="tr-summary" role="status"></p>
     <ul class="tr-key" aria-hidden="true">
-      <li><span class="tr-swatch" style="background:${COLORS.green}"></span>Within demo range</li>
-      <li><span class="tr-swatch" style="background:${COLORS.amber}"></span>Watch closely</li>
-      <li><span class="tr-swatch" style="background:${COLORS.red}"></span>Act now</li>
+      <li><span class="tr-swatch" style="background:${COLORS.green}"></span><span data-i18n="trend.key.ok">Within demo range</span></li>
+      <li><span class="tr-swatch" style="background:${COLORS.amber}"></span><span data-i18n="trend.key.watch">Watch closely</span></li>
+      <li><span class="tr-swatch" style="background:${COLORS.red}"></span><span data-i18n="trend.key.act">Act now</span></li>
     </ul>
+    <section class="tr-drift" id="tr-drift" aria-live="polite"></section>
     <div class="tr-sample">
       <p class="muted" id="tr-sample-note"></p>
       <div class="tr-sample-actions">
-        <button type="button" class="btn-ghost" id="tr-load">Load 14 days of sample data (SAMPLE)</button>
-        <button type="button" class="btn-ghost" id="tr-remove" hidden>Remove sample data</button>
+        <button type="button" class="btn-ghost" id="tr-load" data-i18n="trend.loadSample">Load 14 days of sample data (SAMPLE)</button>
+        <button type="button" class="btn-ghost" id="tr-remove" data-i18n="trend.removeSample" hidden>Remove sample data</button>
       </div>
     </div>`;
+}
+
+function driftAdviceHtml({ key, direction }) {
+  return `<li class="drift-item">
+      <h4>${t(`ind.${key}`)} · ${direction === 'up' ? '↑' : '↓'}</h4>
+      <p>${t(`drift.${key}.${direction}`)}</p>
+    </li>`;
+}
+
+function driftTemplate(checkins) {
+  const { enoughData, flagged } = analyzeDrift(checkins);
+  const disclaimer = `<p class="muted">${t('drift.limits')}</p>`;
+  if (!enoughData) {
+    return `<h3>${t('drift.title')}</h3><p class="muted">${t('drift.notEnough')}</p>${disclaimer}`;
+  }
+  if (flagged.length === 0) {
+    return `<h3>${t('drift.none')}</h3><p class="muted">${t('drift.noneNote')}</p>${disclaimer}`;
+  }
+  return `<h3>${t('drift.title')}</h3>
+    <p>${t('drift.intro')}</p>
+    <ul class="drift-list">${flagged.map(driftAdviceHtml).join('')}</ul>
+    ${disclaimer}`;
 }
 
 function pointsInRange(indicator, checkins, start, end) {
@@ -92,7 +97,7 @@ function drawChart(canvas, indicator, points, days, now) {
   const lo = dataLo - pad;
   const hi = dataHi + pad;
   const yOf = (v) => PAD.top + ((hi - v) / (hi - lo)) * plotH;
-  const xOf = (t) => PAD.left + ((t - start) / (end - start)) * plotW;
+  const xOf = (time) => PAD.left + ((time - start) / (end - start)) * plotW;
 
   ctx.fillStyle = 'rgba(217, 83, 79, 0.14)';
   ctx.fillRect(PAD.left, PAD.top, plotW, plotH);
@@ -101,10 +106,12 @@ function drawChart(canvas, indicator, points, days, now) {
   ctx.fillStyle = 'rgba(46, 158, 107, 0.26)';
   ctx.fillRect(PAD.left, yOf(indicator.green[1]), plotW, yOf(indicator.green[0]) - yOf(indicator.green[1]));
 
+  const family = getComputedStyle(canvas).fontFamily;
   ctx.strokeStyle = '#DCCBAE';
   ctx.lineWidth = 1;
   ctx.fillStyle = '#4F5673';
-  ctx.font = '12px system-ui, sans-serif';
+  ctx.font = `12px ${family}`;
+  ctx.direction = 'ltr';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
   for (let i = 0; i <= 4; i += 1) {
@@ -117,10 +124,11 @@ function drawChart(canvas, indicator, points, days, now) {
     ctx.fillText(v.toFixed(indicator.decimals), PAD.left - 8, y);
   }
 
+  const locale = getLang() === 'ar' ? 'ar-u-nu-latn' : undefined;
   ctx.textBaseline = 'top';
   [0, 0.5, 1].forEach((f) => {
-    const t = start + (end - start) * f;
-    const label = new Date(t).toLocaleDateString([], { month: 'short', day: 'numeric' });
+    const time = start + (end - start) * f;
+    const label = new Date(time).toLocaleDateString(locale, { month: 'short', day: 'numeric' });
     ctx.textAlign = f === 0 ? 'left' : f === 1 ? 'right' : 'center';
     ctx.fillText(label, PAD.left + plotW * f, CHART_H - PAD.bottom + 10);
   });
@@ -156,6 +164,7 @@ export function mountTrends(rootElement) {
   const canvas = rootElement.querySelector('#tr-canvas');
   const emptyNote = rootElement.querySelector('#tr-empty');
   const summary = rootElement.querySelector('#tr-summary');
+  const driftCard = rootElement.querySelector('#tr-drift');
   const sampleNote = rootElement.querySelector('#tr-sample-note');
   const removeBtn = rootElement.querySelector('#tr-remove');
   const rangeButtons = [...rootElement.querySelectorAll('[data-days]')];
@@ -163,29 +172,36 @@ export function mountTrends(rootElement) {
 
   function refresh() {
     const now = new Date();
-    const indicator = INDICATORS.find((ind) => ind.key === metric.value);
+    const indicator = METRICS.find((ind) => ind.key === metric.value);
     const checkins = loadCheckins();
     const points = pointsInRange(indicator, checkins, now.getTime() - days * DAY_MS, now.getTime());
     const hasSample = checkins.some((c) => c.sample);
 
     drawChart(canvas, indicator, points, days, now);
-    canvas.setAttribute('aria-label', `${indicator.label} over the last ${days} days, ${points.length} readings`);
+    canvas.setAttribute('aria-label', t('trend.aria', { m: indicator.label, d: days, n: points.length }));
 
     emptyNote.hidden = points.length > 0;
     emptyNote.textContent = checkins.length === 0
-      ? 'No check-ins saved yet. Save a check-in or load sample data to see a trend.'
-      : `No ${indicator.label.toLowerCase()} readings in the last ${days} days.`;
+      ? t('trend.noCheckins')
+      : t('trend.noReadings', { m: indicator.label.toLowerCase(), d: days });
 
     const latest = points.at(-1);
     summary.textContent = latest
-      ? `${points.length} readings in the last ${days} days. Latest: ${formatValue(indicator, latest.v)}, ${STATUS[statusOf(indicator, latest.v)].label.toLowerCase()}.`
+      ? t('trend.summary', {
+        n: points.length,
+        d: days,
+        v: formatValue(indicator, latest.v),
+        s: STATUS[statusOf(indicator, latest.v)].label.toLowerCase(),
+      })
       : '';
 
-    sampleNote.textContent = hasSample
-      ? 'Sample readings are included in this chart. They are marked as sample data and do not reflect a real crew member.'
-      : 'Sample data is for trying the chart. It is marked SAMPLE and can be removed at any time.';
+    driftCard.innerHTML = driftTemplate(checkins);
+    sampleNote.textContent = hasSample ? t('trend.sampleOn') : t('trend.sampleOff');
     removeBtn.hidden = !hasSample;
-    rangeButtons.forEach((btn) => btn.setAttribute('aria-pressed', String(Number(btn.dataset.days) === days)));
+    rangeButtons.forEach((btn) => {
+      btn.textContent = t('trend.days', { d: btn.dataset.days });
+      btn.setAttribute('aria-pressed', String(Number(btn.dataset.days) === days));
+    });
   }
 
   metric.addEventListener('change', refresh);
@@ -200,6 +216,14 @@ export function mountTrends(rootElement) {
   });
   removeBtn.addEventListener('click', () => {
     saveCheckins(loadCheckins().filter((c) => !c.sample));
+    refresh();
+  });
+
+  window.addEventListener('helios:lang', () => {
+    translateIn(rootElement);
+    metric.querySelectorAll('option').forEach((opt) => {
+      opt.textContent = METRICS.find((ind) => ind.key === opt.value).label;
+    });
     refresh();
   });
 

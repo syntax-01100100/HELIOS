@@ -7,6 +7,7 @@ import { mountGame } from './game.js';
 import { ENVIRONMENTS, delayNote, evaluateAll } from './ranges.js';
 import { readinessScore } from './rules.js';
 import { dayKey, currentStreak, loadCheckins, loadEnvironment, saveEnvironment } from './store.js';
+import { t } from '../shared/i18n.js';
 
 const TAB_IDS = ['checkin', 'body', 'trends', 'game'];
 const tabButtons = [...document.querySelectorAll('[data-tab]')];
@@ -37,12 +38,12 @@ function renderStrip() {
   const score = latest ? readinessScore(evaluateAll(latest.values)) : null;
   document.querySelector('#s-ready').textContent = score ?? '--';
   document.querySelector('#s-ready-note').textContent = latest
-    ? 'Based on your latest check-in'
-    : 'Save a check-in to see your score';
+    ? t('health.basedOnLatest')
+    : t('health.readinessEmpty');
   document.querySelector('#s-streak').textContent = String(currentStreak(checkins));
   const doneToday = checkins.some((c) => c.date === dayKey());
-  document.querySelector('#s-due').textContent = doneToday ? 'Tomorrow' : 'Due now';
-  envNote.textContent = `Signal delay: ${delayNote(envSelect.value)}`;
+  document.querySelector('#s-due').textContent = doneToday ? t('health.tomorrow') : t('health.dueNow');
+  envNote.textContent = t('health.signalDelay', { value: delayNote(envSelect.value) });
 }
 
 tabButtons.forEach((btn) => {
@@ -79,6 +80,13 @@ function refreshAll() {
   trends.refresh();
   game.refresh();
 }
+
+window.addEventListener('helios:lang', () => {
+  renderStrip();
+  body.refresh();
+  trends.refresh();
+  game.refresh();
+});
 
 renderStrip();
 showTab(currentTab());

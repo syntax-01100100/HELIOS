@@ -3,80 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>HELIOS Crew Health</title>
-  <meta name="description" content="Daily crew health check-in, guidance, body map, trends and a mission game for HELIOS. Demo reference ranges, guidance not diagnosis." />
+  <title data-i18n="health.title">HELIOS Crew Health</title>
+  <meta name="description" content="Daily crew health check-in, guidance, body map, trends and a mission game for HELIOS. Demo reference ranges, guidance not diagnosis." data-i18n-attr="content|health.description" />
 </head>
 <body>
-  <a class="skip" href="#main">Skip to content</a>
+  <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
   <header class="hd">
     <div class="nav">
-      <a class="logo" href="index.html#top" aria-label="HELIOS home">
+      <a class="logo" href="index.html#top" data-i18n-attr="aria-label|brand.label" aria-label="HELIOS home">
         <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="none" stroke="#3F51A8" stroke-width="3"/><circle cx="24" cy="24" r="6" fill="#3F51A8"/></svg>
-        <span>HELIOS</span>
+        <span data-i18n="brand.name">HELIOS</span>
       </a>
-      <nav class="links" aria-label="Main">
-        <a href="index.html#ov">Overview</a>
-        <a href="health.html#checkin">Health Check</a>
-        <a href="health.html#body">Body Map</a>
-        <a href="health.html#game">Mission Game</a>
-        <a href="index.html#nasa-data-section">NASA Data</a>
+      <nav class="links" aria-label="Main" data-i18n-attr="aria-label|nav.main">
+        <a href="index.html#ov" data-i18n="nav.overview">Overview</a>
+        <a href="health.html#checkin" data-i18n="nav.healthCheck">Health Check</a>
+        <a href="health.html#body" data-i18n="nav.bodyMap">Body Map</a>
+        <a href="health.html#game" data-i18n="nav.missionGame">Mission Game</a>
+        <a href="index.html#nasa-data-section" data-i18n="nav.nasaData">NASA Data</a>
       </nav>
-      <a class="lang" href="index.html#top" lang="ar" aria-label="Open the Arabic version on the main page">عربي</a>
-      <button class="menu" id="mn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="dr"><span class="bars" aria-hidden="true"></span></button>
+      <button class="lang-btn" type="button" data-lang-toggle data-i18n="lang.toggle" data-i18n-attr="aria-label|lang.toggleLabel">العربية</button>
+      <button class="menu" id="mn" type="button" data-i18n-attr="aria-label|nav.menu" aria-label="Menu" aria-expanded="false" aria-controls="dr"><span class="bars" aria-hidden="true"></span></button>
     </div>
     <div class="drawer" id="dr" hidden>
       <div class="dr-group">
-        <p class="dr-h">HELIOS Helmet</p>
-        <a href="index.html#tile">Module</a>
-        <a href="index.html#mv">Mission View</a>
-        <a href="index.html#sim">Simulation</a>
-        <a href="index.html#sc">Scenario</a>
-        <a href="index.html#join">Crew</a>
-        <a href="index.html#buddy">Buddy Link</a>
-        <a href="index.html#vision">Roadmap</a>
-        <a href="index.html#pilot">Join the build</a>
+        <p class="dr-h" data-i18n="nav.helmet">HELIOS Helmet</p>
+        <a href="index.html#tile" data-i18n="nav.module">Module</a>
+        <a href="index.html#mv" data-i18n="nav.missionView">Mission View</a>
+        <a href="index.html#sim" data-i18n="nav.simulation">Simulation</a>
+        <a href="index.html#sc" data-i18n="nav.scenario">Scenario</a>
+        <a href="index.html#join" data-i18n="nav.crew">Crew</a>
+        <a href="index.html#buddy" data-i18n="nav.buddyLink">Buddy Link</a>
+        <a href="index.html#vision" data-i18n="nav.roadmap">Roadmap</a>
+        <a href="index.html#pilot" data-i18n="nav.joinBuild">Join the build</a>
       </div>
       <div class="dr-group">
-        <p class="dr-h">Crew Health</p>
-        <a href="health.html#checkin">Health Check</a>
-        <a href="health.html#body">Body Map</a>
-        <a href="health.html#trends">Trends</a>
-        <a href="health.html#game">Mission Game</a>
+        <p class="dr-h" data-i18n="nav.crewHealth">Crew Health</p>
+        <a href="health.html#checkin" data-i18n="nav.healthCheck">Health Check</a>
+        <a href="health.html#body" data-i18n="nav.bodyMap">Body Map</a>
+        <a href="health.html#trends" data-i18n="health.tabTrends">Trends</a>
+        <a href="health.html#game" data-i18n="nav.missionGame">Mission Game</a>
       </div>
     </div>
   </header>
 
   <main id="main" class="page">
-    <p class="banner" role="note">Demo reference ranges, not NASA limits. Guidance, not diagnosis. Data stays on this device.</p>
+    <p class="banner" role="note" data-i18n="health.banner">Demo reference ranges, not NASA limits. Guidance, not diagnosis. Data stays on this device.</p>
 
-    <section class="strip" aria-label="Crew health summary">
+    <section class="strip" data-i18n-attr="aria-label|health.summaryLabel" aria-label="Crew health summary">
       <div class="stat">
-        <span class="stat-label">Readiness</span>
+        <span class="stat-label" data-i18n="health.readiness">Readiness</span>
         <b class="stat-value" id="s-ready">--</b>
-        <span class="stat-note" id="s-ready-note">Save a check-in to see your score</span>
+        <span class="stat-note" id="s-ready-note" data-i18n="health.readinessEmpty">Save a check-in to see your score</span>
       </div>
       <div class="stat">
-        <span class="stat-label">Check-in streak</span>
+        <span class="stat-label" data-i18n="health.streak">Check-in streak</span>
         <b class="stat-value" id="s-streak">0</b>
-        <span class="stat-note">days in a row</span>
+        <span class="stat-note" data-i18n="health.daysInRow">days in a row</span>
       </div>
       <div class="stat">
-        <label class="stat-label" for="env">Environment</label>
+        <label class="stat-label" for="env" data-i18n="health.environment">Environment</label>
         <select id="env"></select>
         <span class="stat-note" id="s-env-note"></span>
       </div>
       <div class="stat">
-        <span class="stat-label">Next check due</span>
+        <span class="stat-label" data-i18n="health.nextCheck">Next check due</span>
         <b class="stat-value" id="s-due">--</b>
-        <span class="stat-note">Once a day</span>
+        <span class="stat-note" data-i18n="health.oncePerDay">Once a day</span>
       </div>
     </section>
 
-    <div class="tabs" role="tablist" aria-label="Crew health sections">
-      <button type="button" role="tab" id="tab-checkin" data-tab="checkin" aria-controls="panel-checkin">Check-in</button>
-      <button type="button" role="tab" id="tab-body" data-tab="body" aria-controls="panel-body">Body Map</button>
-      <button type="button" role="tab" id="tab-trends" data-tab="trends" aria-controls="panel-trends">Trends</button>
-      <button type="button" role="tab" id="tab-game" data-tab="game" aria-controls="panel-game">Mission Game</button>
+    <div class="tabs" role="tablist" data-i18n-attr="aria-label|nav.sections" aria-label="Crew health sections">
+      <button type="button" role="tab" id="tab-checkin" data-tab="checkin" aria-controls="panel-checkin" data-i18n="health.tabCheckin">Check-in</button>
+      <button type="button" role="tab" id="tab-body" data-tab="body" aria-controls="panel-body" data-i18n="health.tabBody">Body Map</button>
+      <button type="button" role="tab" id="tab-trends" data-tab="trends" aria-controls="panel-trends" data-i18n="health.tabTrends">Trends</button>
+      <button type="button" role="tab" id="tab-game" data-tab="game" aria-controls="panel-game" data-i18n="health.tabGame">Mission Game</button>
     </div>
 
     <section class="panel" id="panel-checkin" role="tabpanel" aria-labelledby="tab-checkin"></section>
@@ -88,19 +88,20 @@
     </section>
   </main>
 
-  <button class="em-fab" id="em-open" type="button" aria-haspopup="dialog" aria-controls="em-dialog">Emergency</button>
+  <button class="em-fab" id="em-open" type="button" aria-haspopup="dialog" aria-controls="em-dialog" data-i18n="health.emergency">Emergency</button>
   <dialog class="em-dialog" id="em-dialog" aria-labelledby="em-title">
-    <h2 id="em-title">Emergency</h2>
-    <p>Chest pain, severe breathlessness, confusion, fainting or heavy bleeding.</p>
-    <p><b>Follow your mission's emergency protocol and alert the crew and the flight surgeon immediately.</b></p>
-    <form method="dialog"><button class="btn-primary" value="close">Close</button></form>
+    <h2 id="em-title" data-i18n="health.emergencyTitle">Emergency</h2>
+    <p data-i18n="health.emergencyBody">Chest pain, severe breathlessness, confusion, fainting or heavy bleeding.</p>
+    <p><b data-i18n="health.emergencyProtocol">Follow your mission's emergency protocol and alert the crew and the flight surgeon immediately.</b></p>
+    <form method="dialog"><button class="btn-primary" value="close" data-i18n="common.close">Close</button></form>
   </dialog>
 
   <footer class="foot">
-    <p class="credit">Contains data from NASA. Not endorsed by NASA. HELIOS is a prototype, not a medical device, and has not been tested on people.</p>
-    <p class="credit">Visual style inspired by Learn Arduino by Dilum Sanjaya.</p>
+    <p class="credit" data-i18n="health.credit">Contains data from NASA. Not endorsed by NASA. HELIOS is a prototype, not a medical device, and has not been tested on people.</p>
+    <p class="credit" data-i18n="health.styleCredit">Visual style inspired by Learn Arduino by Dilum Sanjaya.</p>
   </footer>
 
+  <script type="module">import { initI18n } from '/src/shared/i18n.js'; initI18n();</script>
   <script type="module" src="/src/health/health.js"></script>
 </body>
 </html>
