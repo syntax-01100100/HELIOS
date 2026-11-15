@@ -676,11 +676,11 @@ html,body{max-width:100%;overflow-x:clip}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="ico" viewBox="0 0 48 48"><path d="M24 4a18 18 0 00-18 18v14a4 4 0 004 4h28a4 4 0 004-4V22A18 18 0 0024 4z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M10 28a14 14 0 0128 0" fill="none" stroke="currentColor" stroke-width="2" opacity=".4"/><rect x="14" y="20" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="24" cy="27" r="4" fill="none" stroke="#19E3FF" stroke-width="2"/><path d="M20 20v-4M28 20v-4M24 34v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14 27h-4M34 27h4" stroke="#19E3FF" stroke-width="2" stroke-linecap="round"/><path d="M18 38v4M22 38v2M26 38v4M30 38v2" stroke="#19E3FF" stroke-width="1.5" stroke-linecap="round"/></symbol></svg>
 <header class="hd"><div class="w nav">
  <a class="logo" href="#top" aria-label="Helios هيليوس"><svg width="40" height="40"><use href="#ico"/></svg><span class="lt"><b>Helios</b><span>هيليوس</span></span></a>
- <nav class="links" id="lk" aria-label="Main"><a href="#ov">Overview</a><a href="health.html#checkin">Health Check</a><a href="health.html#body">Body Map</a><a href="health.html#game">Mission Game</a><a href="#nasa-data-section">NASA Data</a></nav>
+ <nav class="links" id="lk" aria-label="Main"><a href="#ov" data-ar="نظرة عامة">Overview</a><a href="health.html#checkin" data-ar="فحص الصحة">Health Check</a><a href="health.html#body" data-ar="خريطة الجسم">Body Map</a><a href="health.html#game" data-ar="لعبة المهمة">Mission Game</a><a href="#nasa-data-section" data-ar="بيانات ناسا">NASA Data</a></nav>
  <button class="pill" id="lb" data-lang-toggle data-i18n="lang.toggle" data-i18n-attr="aria-label|lang.toggleLabel">العربية</button>
  <button class="pill tg" id="th" type="button" aria-label="Switch to dark mode"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" fill="currentColor"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
  <button class="pill menu" id="mn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="dr"><span class="bars" aria-hidden="true"></span></button>
-</div><div class="drawer" id="dr" hidden><div class="dr-group"><p class="dr-h">HELIOS Helmet</p><a href="#tile">Module</a><a href="#mv">Mission View</a><a href="#sim">Simulation</a><a href="#sc">Scenario</a><a href="#join">Crew</a><a href="#buddy">Buddy Link</a><a href="#vision">Roadmap</a><a href="#pilot">Join the build</a></div><div class="dr-group"><p class="dr-h">Crew Health</p><a href="health.html#checkin">Health Check</a><a href="health.html#body">Body Map</a><a href="health.html#trends">Trends</a><a href="health.html#game">Mission Game</a></div></div><i id="pg"></i></header>
+</div><div class="drawer" id="dr" hidden><div class="dr-group"><p class="dr-h" data-ar="خوذة هيليوس">HELIOS Helmet</p><a href="#tile" data-ar="الوحدة">Module</a><a href="#mv" data-ar="عرض المهمة">Mission View</a><a href="#sim" data-ar="المحاكاة">Simulation</a><a href="#sc" data-ar="السيناريو">Scenario</a><a href="#join" data-ar="الطاقم">Crew</a><a href="#buddy" data-ar="رابط الرفيق">Buddy Link</a><a href="#vision" data-ar="خارطة الطريق">Roadmap</a><a href="#pilot" data-ar="شارك في البناء">Join the build</a></div><div class="dr-group"><p class="dr-h" data-ar="صحة الطاقم">Crew Health</p><a href="health.html#checkin" data-ar="فحص الصحة">Health Check</a><a href="health.html#body" data-ar="خريطة الجسم">Body Map</a><a href="health.html#trends" data-ar="الاتجاهات">Trends</a><a href="health.html#game" data-ar="لعبة المهمة">Mission Game</a></div></div><i id="pg"></i></header>
 
 <main id="top">
 <section class="hero"><div class="w hg">
@@ -789,25 +789,14 @@ html,body{max-width:100%;overflow-x:clip}
 <div class="xg"><div class="xc"><em>LIVE READING</em><div id="schr" class="xok">72</div><div class="xbar"><i id="schb" style="width:36%"></i></div><div><span class="xi" id="j1">VISUAL</span><span class="xi" id="j2">VIBRATION</span><span class="xi" id="j3">AUDIO</span></div><div class="row" style="margin-top:14px"><button class="btn" id="sct">TRIGGER SCENARIO</button><button class="btn alt" id="scr">RESET</button></div><p class="xn" id="scm">Normal operation. Demo range: below 130 BPM.</p></div>
 <div class="xc"><em>EVENT LOG</em><ul class="xl" id="sl"><li>Normal readings</li><li>Reading leaves the demo range</li><li>HELIOS identifies the unusual reading</li><li>Indicator changes colour</li><li>Visual alert appears on the visor</li><li>Vibration and audio indicators activate</li><li>Guidance: stop activity, rest, hydrate, re-check</li><li>Simulated emergency notification (conceptual)</li></ul></div></div></div></section>
 
-<section id="spec"><div class="w"><p class="eyebrow"><span class="dot"></span><span>07 · TECHNICAL SPECIFICATIONS</span></p><h2>Conceptual architecture</h2>
+<section id="spec"><div class="w"><p class="eyebrow"><span class="dot"></span><span data-ar="07 · المواصفات التقنية">07 · TECHNICAL SPECIFICATIONS</span></p><h2 data-ar="بنية مفاهيمية">Conceptual architecture</h2>
 <div class="xc" style="margin-top:22px"><table class="xtb">
-<tr><td>SENSING</td><td>Optical pulse and SpO₂ using red and infrared LEDs with a photodiode; ECG electrodes with an analog front-end chip; digital skin-temperature sensor; motion chip; breathing rate estimated from ECG or pulse. SpO₂ is about ±2–3% at best and degraded by motion. Skin temperature is not core body temperature.</td></tr>
-<tr><td>SUIT AIR</td><td>CO₂, O₂ and pressure sensors. Rising CO₂ is a real suit hazard.</td></tr>
-<tr><td>RADIATION</td><td>Separate silicon-detector dosimeter reporting dose rate in µGy/h, the same unit as NASA RadLab. Neutrons need their own detector. HELIOS measures exposure, not biological damage.</td></tr>
-<tr><td>PROCESSING</td><td>Low-power ARM Cortex-M microcontroller for vitals, filters and alerts; a separate application-class chip with a small AI accelerator for camera vision. The ESP32 is a ground prototype board only, not a flight part.</td></tr>
-<tr><td>SOFTWARE PIPELINE</td><td>Clean the signal and detect each heartbeat → compare with the astronaut’s own baseline → combine signals (fast pulse with falling SpO₂ and rising CO₂ points to a suit problem; fast pulse during exercise does not) → tiered alerts: advisory, caution, warning → visor, audio, vibration.</td></tr>
-<tr><td>SPACE RELIABILITY</td><td>Radiation can flip bits in ordinary chips. Flight hardware uses error-correcting memory, a watchdog reset, redundant processors and shielding.</td></tr>
-<tr><td>AUTONOMY</td><td>Mars one-way delay is about 3–22 minutes, so the helmet decides locally and sends summaries when the link allows.</td></tr>
-<tr><td>DISPLAY</td><td>Helmet visor display layer driven by the module</td></tr>
-<tr><td>ALERTS</td><td>Visual, vibration and audio channels</td></tr>
-<tr><td>POWER</td><td>Helmet power supply with on-module power management (simulated)</td></tr>
-<tr><td>COMMUNICATION</td><td>Short-range link to nearby units and satellite relay (conceptual)</td></tr>
-<tr><td>INSTALLATION</td><td>Compact enclosure with four mounting points in a helmet electronics compartment, wired to the visor, camera, audio, haptics, suit telemetry and skin-contact sensors</td></tr>
-<tr><td>ACCESS</td><td>Face, fingerprint or voice authentication (conceptual)</td></tr>
-<tr><td>STATUS</td><td>Software simulation only. Not a medical device. Readings are simulated.</td></tr></table></div>
-<div class="xc" style="margin-top:22px"><h3>How it could really be built</h3>
-<ol style="margin:12px 0 0 20px;line-height:1.6"><li>Bench prototype.</li><li>Accuracy testing against medical-grade ECG and pulse oximeters on volunteers.</li><li>Analog missions and ground tests.</li><li>Safety certification against NASA human-system standards.</li><li>Flight demo on the ISS.</li></ol></div>
-<div class="note" style="margin-top:22px"><b>Honest claims</b><p style="margin-top:6px">Each part exists today. Our contribution is the integration, per-astronaut baselines, and decisions made on the helmet itself. HELIOS detects changes and exposure, then alerts. It does not detect everything or diagnose illness. NASA data shows the hazards are real and gives realistic conditions to demonstrate against; our alert limits are demo values and a design concept to be validated with NASA experts.</p></div></div></section>
+<tr><td data-ar="الاستشعار">SENSING</td><td data-ar="نبض ضوئي وأكسجين الدم عبر مصابيح حمراء وتحت الحمراء مع كاشف ضوئي؛ أقطاب كهربائية القلب مع رقاقة معالجة تماثلية؛ محسّس رقمي لحرارة الجلد؛ شريحة حركة؛ ومعدل التنفس المقدر من رسم القلب أو النبض. نسبة SpO₂ تقريبًا ±2–3% في أفضل الأحوال وتتراجع بالحركة. حرارة الجلد ليست حرارة الجسم الداخلية.">Optical pulse and SpO₂ using red and infrared LEDs with a photodiode; ECG electrodes with an analog front-end chip; digital skin-temperature sensor; motion chip; breathing rate estimated from ECG or pulse. SpO₂ is about ±2–3% at best and degraded by motion. Skin temperature is not core body temperature.</td></tr>
+<tr><td data-ar="هواء البدلة">SUIT AIR</td><td data-ar="مستشعرات ثاني أكسيد الكربون والأكسجين والضغط. ارتفاع ثاني أكسيد الكربون خطر حقيقي في البدلة.">CO₂, O₂ and pressure sensors. Rising CO₂ is a real suit hazard.</td></tr><tr><td data-ar="الإشعاع">RADIATION</td><td data-ar="مكشاف جرعة من السيليكون يعرض معدل الجرعة بوحدة µGy/h، نفس وحدة NASA RadLab. النيوترونات تحتاج إلى كاشف مستقل. هيليوس يقيس التعرض ولا يقيس الضرر البيولوجي.">Separate silicon-detector dosimeter reporting dose rate in µGy/h, the same unit as NASA RadLab. Neutrons need their own detector. HELIOS measures exposure, not biological damage.</td></tr><tr><td data-ar="المعالجة">PROCESSING</td><td data-ar="متحكم منخفض الطاقة من نوع ARM Cortex-M للعلامات الحيوية والفلاتر والتنبيهات؛ ورقاقة منفصلة للرؤية الحاسوبية مع مسرّع ذكاء اصطناعي صغير. لوحة ESP32 نموذج أرضي فقط، وليست قطعة طيران.">Low-power ARM Cortex-M microcontroller for vitals, filters and alerts; a separate application-class chip with a small AI accelerator for camera vision. The ESP32 is a ground prototype board only, not a flight part.</td></tr>
+<tr><td data-ar="سلامة البرمجيات">SOFTWARE PIPELINE</td><td data-ar="تنظيف الإشارة ورصد كل نبضة ← مقارنة بالخط الأساسي الخاص بالرائد ← دمج الإشارات (نبض سريع مع انخفاض SpO₂ وارتفاع CO₂ يشير إلى مشكلة في البدلة، أما النبض السريع أثناء التمرين فلا) ← تنبيهات بمستويات: إرشاد، تحذير، إنذار ← الشاشة والصوت والاهتزاز.">Clean the signal and detect each heartbeat → compare with the astronaut’s own baseline → combine signals (fast pulse with falling SpO₂ and rising CO₂ points to a suit problem; fast pulse during exercise does not) → tiered alerts: advisory, caution, warning → visor, audio, vibration.</td></tr><tr><td data-ar="موثوقية الفضاء">SPACE RELIABILITY</td><td data-ar="قد تقلب الأشعة بتاتا واحدة في الرقائق العادية. تستخدم الطائرات ذاكرة مصحّحة للأخطاء، ومؤقتاً لإعادة التشغيل، ومعالجات مزدوجة، ودرعاً واقياً.">Radiation can flip bits in ordinary chips. Flight hardware uses error-correcting memory, a watchdog reset, redundant processors and shielding.</td></tr><tr><td data-ar="الاستقلالية">AUTONOMY</td><td data-ar="التأخير الأحادي إلى المريخ نحو 3–22 دقيقة، لذا تقرر الخوذة محليًا وترسل الملخصات عند توفر الاتصال.">Mars one-way delay is about 3–22 minutes, so the helmet decides locally and sends summaries when the link allows.</td></tr><tr><td data-ar="العرض">DISPLAY</td><td data-ar="طبقة عرض على شاشة الخوذة تقودها الوحدة">Helmet visor display layer driven by the module</td></tr><tr><td data-ar="التنبيهات">ALERTS</td><td data-ar="قنوات بصرية واهتزازية وصوتية">Visual, vibration and audio channels</td></tr><tr><td data-ar="الطاقة">POWER</td><td data-ar="إدارة طاقة على الوحدة ومن مزوّد طاقة في الخوذة (محاكاة)">Helmet power supply with on-module power management (simulated)</td></tr><tr><td data-ar="الاتصال">COMMUNICATION</td><td data-ar="رابط قصير المدى مع الوحدات القريبة والترحيل عبر الأقمار الصناعية (مفاهيمي)">Short-range link to nearby units and satellite relay (conceptual)</td></tr><tr><td data-ar="التركيب">INSTALLATION</td><td data-ar="وحدة مدمجة بأربع نقاط تثبيت في حجرة إلكترونيات الخوذة، موصلة بالشاشة الأمامية والكاميرا والصوت والاهتزاز وقياس البدلة والمستشعرات الجلدية">Compact enclosure with four mounting points in a helmet electronics compartment, wired to the visor, camera, audio, haptics, suit telemetry and skin-contact sensors</td></tr><tr><td data-ar="الوصول">ACCESS</td><td data-ar="تعرّف بالوجه أو بصمة الإصبع أو الصوت (مفاهيمي)">Face, fingerprint or voice authentication (conceptual)</td></tr><tr><td data-ar="الحالة">STATUS</td><td data-ar="محاكاة برمجية فقط. ليس جهازاً طبياً. القراءات محاكاة.">Software simulation only. Not a medical device. Readings are simulated.</td></tr></table></div>
+<div class="xc" style="margin-top:22px"><h3 data-ar="كيف ستُبنى فعلًا">How it could really be built</h3>
+<ol style="margin:12px 0 0 20px;line-height:1.6"><li data-ar="نموذج أولي على طاولة العمل.">Bench prototype.</li><li data-ar="اختبار الدقة مقابل أجهزة ECG وقياس الأكسجين الطبية على متطوعين.">Accuracy testing against medical-grade ECG and pulse oximeters on volunteers.</li><li data-ar="بعثات تحليلية واختبارات أرضية.">Analog missions and ground tests.</li><li data-ar="التصديق على السلامة وفق معايير NASA للعنصر البشري.">Safety certification against NASA human-system standards.</li><li data-ar="عرض تجريبي في محطة الفضاء الدولية.">Flight demo on the ISS.</li></ol></div>
+<div class="note" style="margin-top:22px"><b data-ar="ادعاءات صادقة">Honest claims</b><p style="margin-top:6px" data-ar="كل جزء موجود اليوم. مساهمتنا هي التكامل والخطوط الأساسية لكل رائد والقرارات التي تُاخذ على الخوذة نفسها. هيليوس يكتشف التغيرات والتعرض ثم ينبّه. لا يكتشف كل شيء ولا يشخّص المرض. قيم الإنذار في العرض قيم تجريبية وتحتاج إلى التحقق منها مع خبراء NASA.">Each part exists today. Our contribution is the integration, per-astronaut baselines, and decisions made on the helmet itself. HELIOS detects changes and exposure, then alerts. It does not detect everything or diagnose illness. NASA data shows the hazards are real and gives realistic conditions to demonstrate against; our alert limits are demo values and a design concept to be validated with NASA experts.</p></div></div></section>
 
 <section id="how" style="background:var(--sf)"><div class="w">
  <h2>How a heartbeat becomes a warning.</h2>
@@ -825,87 +814,77 @@ html,body{max-width:100%;overflow-x:clip}
 </div></section>
 
 <section id="power"><div class="w">
- <h2>Battery runtime: a realistic estimate</h2>
- <p class="lead">Each part draws a little current. Choose a battery size to see how long it would run each part on its own.</p>
+ <h2 data-ar="عمر البطارية: تقدير واقعي">Battery runtime: a realistic estimate</h2>
+ <p class="lead" data-ar="يستهلك كل جزء تياراً صغيراً. اختر حجم البطارية لترى مدة تشغيل كل جزء على حدة.">Each part draws a little current. Choose a battery size to see how long it would run each part on its own.</p>
  <div class="g2" style="align-items:start">
-  <div class="card"><div class="ctl"><label for="jj"><span>Battery capacity (mAh)</span><output id="jjo">500</output></label><input id="jj" type="range" min="200" max="1500" step="100" value="500"></div><div id="loads"></div></div>
-  <div><div class="note"><b>Reality check</b><p style="margin-top:6px">These are rough typical values, not measurements. The wireless radio and the vibration motor use the most, so real modules sleep the radio and buzz only briefly. Everything runs at once, so real runtime is shorter than any single bar.</p></div></div>
+  <div class="card"><div class="ctl"><label for="jj"><span data-ar="سعة البطارية (mAh)">Battery capacity (mAh)</span><output id="jjo">500</output></label><input id="jj" type="range" min="200" max="1500" step="100" value="500"></div><div id="loads"></div></div>
+  <div><div class="note"><b>Reality check</b><p style="margin-top:6px" data-ar="هذه أرقام تقريبية نموذجية، وليست قياسات. الراديو اللاسلكي ومحرك الاهتزاز يستهلكان الأكثر، لذلك تنام الوحدات الحقيقية الراديو وتهتز لفترة قصيرة فقط. وبما أن كل شيء يعمل في وقت واحد، فإن المدة الحقيقية أقصر من أي شريط مفرد.">These are rough typical values, not measurements. The wireless radio and the vibration motor use the most, so real modules sleep the radio and buzz only briefly. Everything runs at once, so real runtime is shorter than any single bar.</p></div></div>
  </div>
 </div></section>
 
 <section id="impact" style="background:var(--sf)"><div class="w">
- <h2>A mission in numbers.</h2>
- <p class="lead">Move the sliders to see how much health data one mission could produce. Numbers are illustrative.</p>
+ <h2 data-ar="مهمة بالأرقام.">A mission in numbers.</h2>
+ <p class="lead" data-ar="حرّك المنزلات لترى كم من بيانات الصحة يمكن أن تنتج مهمة واحدة. الأرقام توضيحية.">Move the sliders to see how much health data one mission could produce. Numbers are illustrative.</p>
  <div class="g2">
-  <div class="card ctl"><label for="stu"><span>Crew members</span><output id="stuo"></output></label><input id="stu" type="range" min="1" max="12" step="1" value="4">
-   <label for="spd"><span>Mission length (days)</span><output id="spdo"></output></label><input id="spd" type="range" min="10" max="500" step="10" value="180"></div>
-  <div><div class="big stg"><div><b id="o1">0</b><span>million readings, one per second</span></div><div><b id="o2">0</b><span>MB of health data on the module</span></div><div><b id="o3">0</b><span>sunrises in low Earth orbit</span></div><div><b id="o4">0</b><span>hours of sleep to protect</span></div></div>
-  <p style="margin-top:14px;color:var(--mut);font-size:15px">Assumes 16 bytes per reading, about 16 sunrises a day as on the ISS, and 8 hours of sleep a night.</p></div>
+  <div class="card ctl"><label for="stu"><span data-ar="عدد أفراد الطاقم">Crew members</span><output id="stuo"></output></label><input id="stu" type="range" min="1" max="12" step="1" value="4">
+   <label for="spd"><span data-ar="مدة المهمة (بالأيام)">Mission length (days)</span><output id="spdo"></output></label><input id="spd" type="range" min="10" max="500" step="10" value="180"></div>
+  <div><div class="big stg"><div><b id="o1">0</b><span data-ar="مليون قراءة، قراءة كل ثانية">million readings, one per second</span></div><div><b id="o2">0</b><span data-ar="ميغابايت من بيانات الصحة على الوحدة">MB of health data on the module</span></div><div><b id="o3">0</b><span data-ar="شروق الشمس في المدار الأرضي المنخفض">sunrises in low Earth orbit</span></div><div><b id="o4">0</b><span data-ar="ساعات نوم يجب حمايتها">hours of sleep to protect</span></div></div>
+  <p style="margin-top:14px;color:var(--mut);font-size:15px" data-ar="تفترض 16 بايت لكل قراءة، وحوالي 16 شروق شمس يومياً كما في المحطة الفضائية الدولية، و٤ ساعات نوم كل ليلة.">Assumes 16 bytes per reading, about 16 sunrises a day as on the ISS, and 8 hours of sleep a night.</p></div>
  </div>
 </div></section>
 
 <section id="who"><div class="w">
- <h2>Who is Helios for?</h2>
+ <h2 data-ar="من هو هيليوس له؟">Who is Helios for?</h2>
  <div class="tabs" id="tabs" role="tablist"></div><div class="cols stg" id="tp"></div>
 </div></section>
 
 
 
 <section id="join" class="joinsec"><div class="w">
- <p class="eyebrow"><span class="dot"></span><span>Emergency assistance</span></p>
- <h2>Help for every crew member.</h2>
- <p class="lead">In a simulated emergency, HELIOS can display emergency instructions, provide access to emergency-kit information and communicate alerts to nearby connected units. Satellite communication to mission control is a conceptual feature.</p>
+ <p class="eyebrow"><span class="dot"></span><span data-ar="الطوارئ والمساعدة">Emergency assistance</span></p>
+ <h2 data-ar="مساعدة لكل عضو في الطاقم.">Help for every crew member.</h2>
+ <p class="lead" data-ar="في حالة طوارئ محاكاة، يستطيع هيليوس عرض تعليمات الطوارئ والوصول إلى معلومات حقيبة الطوارئ وإرسال التنبيهات إلى الوحدات المتصلة القريبة. الاتصال عبر الأقمار الصناعية بمركز التحكم ميزة مفاهيمية.">In a simulated emergency, HELIOS can display emergency instructions, provide access to emergency-kit information and communicate alerts to nearby connected units. Satellite communication to mission control is a conceptual feature.</p>
  <div class="g2">
   <div class="card lamps" id="radar">
-   <h3>Alert nearby units</h3>
-   <p>Send a simulated alert and watch nearby HELIOS units respond.</p>
+   <h3 data-ar="تنبيه الوحدات القريبة">Alert nearby units</h3>
+   <p data-ar="أرسل تنبيهاً محاكى وشاهد استجابة وحدات هيليوس القريبة.">Send a simulated alert and watch nearby HELIOS units respond.</p>
    <svg id="rsvg" viewBox="0 0 300 300" role="img" aria-label="Radar showing four nearby crew units around you"></svg>
    <ul class="rdl" id="rl"></ul>
    <p id="rm" style="min-height:44px;font-weight:600"></p>
-   <div class="row"><button class="btn" id="rsend" type="button">Send alert</button><button class="btn alt" id="rreset" type="button">Reset</button></div>
-   <p style="font-size:13px;margin-top:10px">Simulated. Unit-to-unit links are a conceptual feature.</p>
+   <div class="row"><button class="btn" id="rsend" type="button" data-ar="أرسل التنبيه">Send alert</button><button class="btn alt" id="rreset" type="button" data-ar="إعادة">Reset</button></div>
+   <p style="font-size:13px;margin-top:10px" data-ar="محاكاة. الربط بين الوحدات ميزة مفاهيمية.">Simulated. Unit-to-unit links are a conceptual feature.</p>
   </div>
   <div class="roles stg">
-   <div><span class="tag">Sensing</span><h3>Monitor it</h3><p>Pulse, SpO₂, skin temperature and movement are read by skin-contact sensors in the helmet liner and suit.</p></div>
-   <div><span class="tag">Processing</span><h3>Compare it</h3><p>The onboard unit compares readings with the astronaut’s own baseline, offline.</p></div>
-   <div><span class="tag">Alerts</span><h3>Signal it</h3><p>Visual, vibration and audio indicators warn through several senses.</p></div>
-   <div><span class="tag">Access</span><h3>Protect it</h3><p>Face, fingerprint or voice authentication restricts access (conceptual).</p></div>
+   <div><span class="tag" data-ar="الاستشعار">Sensing</span><h3 data-ar="راقبه">Monitor it</h3><p data-ar="تقرأ أجهزة استشعار على بشرة بالخوذة والبدلة النبض وSpO₂ وحرارة الجلد والحركة.">Pulse, SpO₂, skin temperature and movement are read by skin-contact sensors in the helmet liner and suit.</p></div><div><span class="tag" data-ar="المعالجة">Processing</span><h3 data-ar="قارنه">Compare it</h3><p data-ar="تقارن الوحدة المحمولة القراءات بالخط الأساسي الخاص بالرائد، بدون اتصال.">The onboard unit compares readings with the astronaut’s own baseline, offline.</p></div><div><span class="tag" data-ar="التنبيهات">Alerts</span><h3 data-ar="نبّهه">Signal it</h3><p data-ar="مؤشرات بصرية واهتزازية وصوتية تحذر عبر عدة حواس.">Visual, vibration and audio indicators warn through several senses.</p></div><div><span class="tag" data-ar="الوصول">Access</span><h3 data-ar="احمِه">Protect it</h3><p data-ar="التعرّف بالوجه أو بصمة الإصبع أو الصوت يقيد الوصول (مفاهيمي).">Face, fingerprint or voice authentication restricts access (conceptual).</p></div>
   </div>
  </div>
- <p class="manifesto">Space is hard on bodies. <span>Let’s look after them.</span></p>
- <div class="row"><a class="btn" href="#mv">Activate Mission View</a><a class="btn alt" href="#tile">Explore the module</a></div>
+ <p class="manifesto" data-ar="الفضاء قاسٍ على الأجسام. <span>فلنعتنِ بها.</span>">Space is hard on bodies. <span>Let’s look after them.</span></p>
+ <div class="row"><a class="btn" href="#mv" data-ar="فعّل عرض المهمة">Activate Mission View</a><a class="btn alt" href="#tile" data-ar="استكشف الوحدة">Explore the module</a></div>
 </div></section>
 
 <section id="buddy" style="background:var(--sf)"><div class="w">
- <p class="eyebrow"><span class="dot"></span><span>Crew connectivity</span></p>
- <h2>Buddy Link</h2>
- <p class="lead">Register a fictional crew profile, connect with other demo users and send each other caution or critical alerts in real time. Connected users can see your simulated heart rate and SpO₂. This demo is public and shared, so do not enter personal information.</p>
+ <p class="eyebrow"><span class="dot"></span><span data-ar="رابط الطاقم">Crew connectivity</span></p>
+ <h2 data-ar="رابط الرفيق">Buddy Link</h2>
+ <p class="lead" data-ar="سجّل ملف طاقم خيالياً، وتواصل مع مستخدمين آخرين تجريبيين، وأرسل لبعضكم تنبيهات حذر أو حرجة في الوقت الفعلي. يستطيع المتصلون رؤية نبض القلب وSpO₂ المحاكى لديك. هذا العرض عام ومشترك، لذا لا تدخل معلومات شخصية.">Register a fictional crew profile, connect with other demo users and send each other caution or critical alerts in real time. Connected users can see your simulated heart rate and SpO₂. This demo is public and shared, so do not enter personal information.</p>
 
  <div id="buddySetupWrap">
   <form id="buddySetup" class="card" style="max-width:480px;margin:20px auto">
-   <h3 style="margin-bottom:12px">Register your crew profile</h3>
-   <label class="f"><span>Callsign</span><input id="buddyCallsign" type="text" placeholder="e.g. NOVA-7" autocomplete="off" maxlength="24" required><span class="err"></span></label>
-   <label class="f"><span>Role</span><select id="buddyRole"><option>Commander</option><option>Engineer</option><option>Medical</option><option>Pilot</option><option>Geologist</option><option>Crew</option></select><span class="err"></span></label>
-   <div class="f full"><button class="btn" type="submit">Join the crew roster</button></div>
+   <h3 style="margin-bottom:12px" data-ar="سجّل ملف الطاقم الخاص بك">Register your crew profile</h3><label class="f"><span data-ar="اسم النداء">Callsign</span><input id="buddyCallsign" type="text" placeholder="e.g. NOVA-7" data-ar-placeholder="مثال: NOVA-7" autocomplete="off" maxlength="24" required><span class="err"></span></label><label class="f"><span data-ar="الدور">Role</span><select id="buddyRole"><option>Commander</option><option>Engineer</option><option>Medical</option><option>Pilot</option><option>Geologist</option><option>Crew</option></select><span class="err"></span></label><div class="f full"><button class="btn" type="submit" data-ar="انضم إلى قائمة الطاقم">Join the crew roster</button></div>
   </form>
  </div>
 
  <div id="buddyPanel" hidden>
   <div class="buddy-bar">
    <div class="buddy-mytag bs-nominal" id="buddyMyTag">--</div>
-   <p class="buddy-hint">Your simulated heart rate and oxygen update automatically every few seconds. Connect with crew below to share alerts.</p>
+   <p class="buddy-hint" data-ar="نبضك المحاكى وأكسجينك يُحدّثان تلقائياً كل بضع شوانى. تواصل مع الطاقم أدناه لتشارك التنبيهات.">Your simulated heart rate and oxygen update automatically every few seconds. Connect with crew below to share alerts.</p>
   </div>
 
   <div class="buddy-cols">
    <div class="buddy-col">
-    <h3>Connected buddies</h3>
+    <h3 data-ar="أعضاء متصلون">Connected buddies</h3>
     <div id="buddyGrid" class="buddy-grid"></div>
     <form id="buddyAlertForm" class="buddy-alert-form" hidden>
-     <h4>Send alert</h4>
-     <label><span>To</span><select id="buddyAlertTarget"></select></label>
-     <label><span>Level</span><select id="buddyAlertLevel"><option value="CAUTION">Caution</option><option value="CRITICAL">Critical</option></select></label>
-     <label><span>Message</span><textarea id="buddyAlertMsg" rows="2" maxlength="200" placeholder="Describe the situation"></textarea></label>
-     <div class="row"><button class="btn" type="submit">Send alert</button><button class="btn alt" type="button" id="buddyAlertCancel">Cancel</button></div>
+     <h4 data-ar="أرسل تنبيها">Send alert</h4><label><span data-ar="إلى">To</span><select id="buddyAlertTarget"></select></label><label><span data-ar="المستوى">Level</span><select id="buddyAlertLevel"><option value="CAUTION" data-ar="تحذير">Caution</option><option value="CRITICAL" data-ar="حرج">Critical</option></select></label><label><span data-ar="الرسالة">Message</span><textarea id="buddyAlertMsg" rows="2" maxlength="200" placeholder="Describe the situation" data-ar-placeholder="صف الموقف"></textarea></label><div class="row"><button class="btn" type="submit" data-ar="أرسل التنبيه">Send alert</button><button class="btn alt" type="button" id="buddyAlertCancel" data-ar="إلغاء">Cancel</button></div>
     </form>
    </div>
 
@@ -959,10 +938,10 @@ document.addEventListener('DOMContentLoaded',function(){
 (function(){
 var $=function(s,r){return(r||document).querySelector(s)},$$=function(s,r){return[].slice.call((r||document).querySelectorAll(s))};
 var lang='en',subs=[],J=500,L=function(e,a){return lang==='ar'?a:e},fmt=function(n,d){return n.toLocaleString('en-US',{maximumFractionDigits:d||0})};
-$$('[data-ar]').forEach(function(e){e.dataset.en=e.innerHTML});
+$('[data-ar]').forEach(function(e){e.dataset.en=e.innerHTML});$('[data-ar-placeholder]').forEach(function(e){e.dataset.enPlaceholder=e.placeholder});
 function num(el,v,d){var a=parseFloat((el.dataset.v||'0')),t0=performance.now();el.dataset.v=v;(function f(t){var k=Math.min(1,(t-t0)/800),x=a+(v-a)*(1-Math.pow(1-k,3));el.textContent=fmt(x,d);if(k<1)requestAnimationFrame(f)})(t0)}
 /* language + theme */
-function setLang(l){lang=l;var h=document.documentElement;h.lang=l;h.dir=l==='ar'?'rtl':'ltr';$$('[data-ar]').forEach(function(e){e.innerHTML=l==='ar'?e.dataset.ar:e.dataset.en});
+function setLang(l){lang=l;var h=document.documentElement;h.lang=l;h.dir=l==='ar'?'rtl':'ltr';$$('[data-ar]').forEach(function(e){e.innerHTML=l==='ar'?e.dataset.ar:e.dataset.en});$('[data-ar-placeholder]').forEach(function(e){e.placeholder=l==='ar'?e.dataset.arPlaceholder:e.dataset.enPlaceholder});
  var ph={ar:['الاسم','البريد الإلكتروني']},ls=$$('#pf label.f');['Name','Email'].forEach(function(n,i){ls[i].firstChild.textContent=l==='ar'?ph.ar[i]:n});
  updTh();split($('h1'));subs.forEach(function(f){f()})}
 addEventListener('helios:lang',function(e){setLang(e.detail.lang)});
